@@ -1,2 +1,6 @@
+# file compilati
+bin/
+
+# file temporanei
 *.o
 *.swp
