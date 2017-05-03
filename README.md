@@ -22,3 +22,21 @@ Non è importante che la versione della shell e di ls realizzate dallo studente 
 
 *feshell* deve essere in grado di supportare la redirezione (<, > e ») e le pipe (|).
 Questo supporto deve essere sostenuto anche in casi misti: e.g. `ps aux | grep ciccio > processiDiCiccio`
+
+## Installazione ##
+
+```
+#!bash
+
+git clone git@bitbucket.org:feshellwithlove/feshell.git
+
+cd feshell/src
+git clone git@bitbucket.org:feshellwithlove/ls.git
+
+cd ./ls/
+mkdir bin/
+make
+
+cd ../../
+make
+```
