@@ -3,6 +3,7 @@ bin/
 
 # file temporanei
 *.o
+*.out
 *.swp
 
 # sub-repo ls
