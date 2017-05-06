@@ -82,12 +82,14 @@ void list_dir(int n_args, char **args) {
     time_t st_time;
     char time[100];
     char *path_tmp;
+    char *actualpath;
 
     ent = readdir(dp);
 
     while (ent != NULL) {
         if ((!input->flag_a && ent->d_name[0] != '.') || input->flag_a) {
             if (!input->flag_l) {
+                printf((S_ISDIR(fileStat.st_mode)) ? "\x1B[34m" : "\x1B[0m");
                 printf("%s\t", ent->d_name);
             }
             else {
@@ -97,7 +99,7 @@ void list_dir(int n_args, char **args) {
                 strcat(path_tmp, "/");
                 strcat(path_tmp, ent->d_name);
 
-                if (stat(path_tmp, &fileStat) < 0) {
+                if (lstat(path_tmp, &fileStat) < 0) {
                     fprintf(stderr, "-feshell: ls: %s: ", path_tmp);
                     perror("");
                 }
@@ -117,12 +119,27 @@ void list_dir(int n_args, char **args) {
                     printf((fileStat.st_mode & S_IROTH) ? "r" : "-");
                     printf((fileStat.st_mode & S_IWOTH) ? "w" : "-");
                     printf((fileStat.st_mode & S_IXOTH) ? "x" : "-");
-                    printf("  %4hu", (unsigned short) fileStat.st_nlink);
-                    printf("  %8s", pwd->pw_name);
-                    printf("  %8s", grp->gr_name);
-                    printf("  %7lld", (long long int) fileStat.st_size);
-                    printf("  %s", time);
-                    printf("  %s", ent->d_name);
+                    printf(" %4hu", (unsigned short) fileStat.st_nlink);
+                    printf(" %8s", pwd->pw_name);
+                    printf(" %8s", grp->gr_name);
+                    printf(" %7lld", (long long int) fileStat.st_size);
+                    printf(" %s", time);
+
+                    if (S_ISDIR(fileStat.st_mode)) printf("\x1B[34m");
+                    else if (fileStat.st_mode & S_IXUSR) printf("\x1B[31m");
+                    if (S_ISLNK(fileStat.st_mode)) printf("\x1B[35m");
+
+                    printf(" %s\x1B[0m", ent->d_name);
+
+                    if (S_ISDIR(fileStat.st_mode)) printf("/");
+                    else if (S_ISLNK(fileStat.st_mode)) {
+                        printf("@ -> ");
+                        actualpath = realpath(path_tmp, NULL);
+                        if (actualpath != NULL) {
+                            printf("%s", actualpath);
+                        }
+                    }
+                    else if (fileStat.st_mode & S_IXUSR) printf("*");
                 }
 
                 printf("\n");
@@ -141,5 +158,6 @@ void list_dir(int n_args, char **args) {
     free(path);
     free(input);
     free(ent);
+    free(actualpath);
     */
 }
