@@ -34,6 +34,7 @@ parsedInput* parse_input(int n_args, char **args) {
         }
         else {
             if (input->path != NULL) {
+                fprintf(stderr, "ls: illegal argument exception\nUsage: [-alth] [file ...]\n");
                 return NULL;
             }
 
@@ -65,6 +66,10 @@ void list_dir(int n_args, char **args) {
     DIR *dp = NULL;
 
     input = parse_input(n_args, args);
+
+    if (input == NULL) {
+        exit(EXIT_FAILURE);
+    }
 
     char currentDirectory[1024] = "";
     char *path = input->path != NULL ? input->path : getcwd(currentDirectory, 1024);
