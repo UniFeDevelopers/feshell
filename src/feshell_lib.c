@@ -7,13 +7,22 @@
 #include "./ls/ls_lib.h"
 #include "./feshell_lib.h"
 
+void shellInfo() {
+    char hostn[1024] = "";
+    gethostname(hostn, sizeof(hostn));
+    if (strstr(hostn, "local") != NULL) {
+        hostn[strlen(hostn) - 6] = '\0';
+    }
+    printf("\x1b[1m\x1B[32m%s@%s\x1b[0m:\x1b[1m\x1B[34m%s \x1b[0m$ ", getenv("LOGNAME"), hostn, strrep(getenv("PWD"), getenv("HOME"), "~"));
+}
+
 int cd(char *args[]) {
     if (args[1] == NULL) {
         chdir(getenv("HOME"));
         return 0;
     }
     else{
-        if (chdir(args[1]) == -1) {
+        if (chdir((const char *) strrep(args[1], "~", getenv("HOME"))) == -1) {
             fprintf(stderr, "-feshell: %s: %s: ", args[0], args[1]);
             perror("");
             return 1;
@@ -27,7 +36,6 @@ int execute(int n_args, char *args[]) {
 
     if (strstr(args[0], "cd") != NULL) {
         return cd(args);
-        //shellInfo();
     }
 
     pid = fork();

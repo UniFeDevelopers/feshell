@@ -40,6 +40,20 @@ parsedInput* parse_input(int n_args, char **args) {
     return input;
 }
 
+char *strrep(char *str, char *orig, char *rep) {
+    static char buffer[4096];
+    char *p;
+
+    if (!(p = strstr(str, orig))) return str;
+
+    strncpy(buffer, str, p-str);
+    buffer[p-str] = '\0';
+
+    sprintf(buffer + (p - str), "%s%s", rep, p + strlen(orig));
+
+    return buffer;
+}
+
 void list_dir(int n_args, char **args) {
     parsedInput *input;
     struct dirent *ent;
@@ -49,7 +63,7 @@ void list_dir(int n_args, char **args) {
 
     char *path = input->path != NULL ? input->path : getenv("PWD");
 
-    dp = opendir((const char*) path);
+    dp = opendir((const char*) strrep(path, "~", getenv("HOME")));
 
     if (dp == NULL) {
         fprintf(stderr, "-feshell: ls: %s: ", path);

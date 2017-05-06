@@ -7,3 +7,4 @@ typedef struct _parsedInput {
 } parsedInput;
 
 void list_dir(int, char **);
+char *strrep(char *, char *, char *);
