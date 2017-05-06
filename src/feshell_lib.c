@@ -48,15 +48,18 @@ int execute(int n_args, char *args[]) {
         }
         else {
             if (execvp(args[0], args) == -1) {
-                fprintf(stderr, "-feshell: %s: command not found\n", args[0]);
-                return 1;
+                fprintf(stderr, "-feshell: %s: ", args[0]);
+                perror("");
+                //return 1;
             }
+            exit(EXIT_FAILURE);
             return 0;
         }
     } else if (pid > 0) {
         pid = wait(&status);
         /*
          * gestione dello stato
+         * wait return child process exit value
          */
     } else {
         fprintf(stderr, "-feshell: fork fallita");

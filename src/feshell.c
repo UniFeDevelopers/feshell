@@ -45,7 +45,9 @@ int main(int argc, char *argv[]) {
         }
 
         if (n_args) {
-            execute(n_args, args);
+            if (execute(n_args, args) == 1) {
+                exit(1);
+            }
         }
 
         shellInfo();
