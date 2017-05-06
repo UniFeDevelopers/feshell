@@ -137,7 +137,6 @@ void list_dir(int n_args, char **args) {
 
     free(pwd);
     free(grp);
-    free(path_tmp);
     free(path);
     free(input);
     free(ent);
