@@ -22,7 +22,7 @@ int cd(char *args[]) {
     return 0;
 }
 
-int execute(char *args[]) {
+int execute(int n_args, char *args[]) {
     int pid, status;
 
     if (strstr(args[0], "cd") != NULL) {
@@ -34,7 +34,7 @@ int execute(char *args[]) {
 
     if (pid == 0) {
         if (!strcmp(args[0], "ls")) {
-            balorda();
+            list_dir(n_args, args);
             return 0;
         }
         else {

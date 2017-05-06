@@ -8,10 +8,9 @@
 
 void shellInfo() {
     char hostn[1024] = "";
-    char currentDirectory[1024] = "";
     gethostname(hostn, sizeof(hostn));
     hostn[strlen(hostn) - 6] = '\0';
-    printf("\x1b[1m\x1B[32m%s@%s\x1b[0m:\x1b[1m\x1B[34m%s \x1b[0m$ ", getenv("LOGNAME"), hostn, getcwd(currentDirectory, 1024));
+    printf("\x1b[1m\x1B[32m%s@%s\x1b[0m:\x1b[1m\x1B[34m%s \x1b[0m$ ", getenv("LOGNAME"), hostn, getenv("PWD"));
 }
 
 int main(int argc, char *argv[]) {
@@ -53,7 +52,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (n_args) {
-            execute(args);
+            execute(n_args, args);
         }
 
         shellInfo();

@@ -1,2 +1,2 @@
 int cd(char **);
-int execute(char **);
+int execute(int, char **);
