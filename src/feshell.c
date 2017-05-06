@@ -28,12 +28,14 @@ int main(int argc, char *argv[]) {
 
         cmd = strtok(buff, " \t\n;");
 
-        if (strstr(cmd, "exit") != NULL) exit(0);
+        if (strstr(cmd, "exit") != NULL) {
+            exit(0);
+        }
 
         while (cmd != NULL) {
             args = realloc(args, sizeof (char*) * ++n_args);
 
-            if (args == NULL) exit (1);
+            if (args == NULL) exit(1);
 
             if (strlen(cmd)) {
                 args[n_args - 1] = cmd;
@@ -47,8 +49,7 @@ int main(int argc, char *argv[]) {
 
             if (pid == 0) {
                 if (execvp(args[0], args) == -1) {
-                    fprintf(stderr, "-feshell: %s: ", args[0]);
-                    perror("");
+                    fprintf(stderr, "-feshell: %s: command not found\n", args[0]);
                 }
             } else if (pid > 0) {
                 pid = wait(&status);
