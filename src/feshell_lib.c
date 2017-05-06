@@ -9,11 +9,12 @@
 
 void shellInfo() {
     char hostn[1024] = "";
+    char currentDirectory[1024] = "";
     gethostname(hostn, sizeof(hostn));
     if (strstr(hostn, "local") != NULL) {
         hostn[strlen(hostn) - 6] = '\0';
     }
-    printf("\x1b[1m\x1B[32m%s@%s\x1b[0m:\x1b[1m\x1B[34m%s \x1b[0m$ ", getenv("LOGNAME"), hostn, strrep(getenv("PWD"), getenv("HOME"), "~"));
+    printf("\x1b[1m\x1B[32m%s@%s\x1b[0m:\x1b[1m\x1B[34m%s \x1b[0m$ ", getenv("LOGNAME"), hostn, strrep(getcwd(currentDirectory, 1024), getenv("HOME"), "~"));
 }
 
 int cd(char *args[]) {
