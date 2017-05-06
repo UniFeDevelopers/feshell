@@ -117,10 +117,10 @@ void list_dir(int n_args, char **args) {
                     printf((fileStat.st_mode & S_IROTH) ? "r" : "-");
                     printf((fileStat.st_mode & S_IWOTH) ? "w" : "-");
                     printf((fileStat.st_mode & S_IXOTH) ? "x" : "-");
-                    printf("  %3hu", fileStat.st_nlink);
+                    printf("  %3hu", (unsigned short) fileStat.st_nlink);
                     printf("  %s", pwd->pw_name);
                     printf("  %s", grp->gr_name);
-                    printf("  %6lld", fileStat.st_size);
+                    printf("  %6lld", (long long int) fileStat.st_size);
                     printf("  %s", time);
                     printf("  %s", ent->d_name);
                 }
