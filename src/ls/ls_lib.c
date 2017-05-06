@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <grp.h>
+#include <unistd.h>
 #include <string.h>
 #include <time.h>
 
@@ -65,7 +66,8 @@ void list_dir(int n_args, char **args) {
 
     input = parse_input(n_args, args);
 
-    char *path = input->path != NULL ? input->path : getenv("PWD");
+    char currentDirectory[1024] = "";
+    char *path = input->path != NULL ? input->path : getcwd(currentDirectory, 1024);
 
     dp = opendir((const char*) strrep(path, "~", getenv("HOME")));
 
@@ -74,22 +76,27 @@ void list_dir(int n_args, char **args) {
         perror("");
     }
 
-    ent = readdir(dp);
-
     struct stat fileStat;
     struct passwd *pwd;
     struct group *grp;
     time_t st_time;
     char time[100];
+    char *path_tmp = (char *) malloc(sizeof(char) * strlen(path));
+
+    ent = readdir(dp);
 
     while (ent != NULL) {
+        strcpy(path_tmp, strrep(path, "~", getenv("HOME")));
+
         if ((!input->flag_a && ent->d_name[0] != '.') || input->flag_a) {
             if (!input->flag_l) {
                 printf("%s\t", ent->d_name);
             }
             else {
-                if (stat(ent->d_name, &fileStat) < 0) {
-                    fprintf(stderr, "-feshell: ls: %s: ", ent->d_name);
+                strcat(path_tmp, "/");
+                strcat(path_tmp, ent->d_name);
+                if (stat(path_tmp, &fileStat) < 0) {
+                    fprintf(stderr, "-feshell: ls: %s: ", path_tmp);
                     perror("");
                 }
                 else {
@@ -98,20 +105,20 @@ void list_dir(int n_args, char **args) {
                     st_time = fileStat.st_mtime;
                     strftime(time, 100, "%d %b %H:%M", localtime(&st_time));
 
-                    printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
-                    printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
-                    printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
-                    printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
-                    printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
-                    printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
-                    printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
-                    printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
-                    printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
-                    printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
-                    printf("  %hu", fileStat.st_nlink);
+                    printf((S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+                    printf((fileStat.st_mode & S_IRUSR) ? "r" : "-");
+                    printf((fileStat.st_mode & S_IWUSR) ? "w" : "-");
+                    printf((fileStat.st_mode & S_IXUSR) ? "x" : "-");
+                    printf((fileStat.st_mode & S_IRGRP) ? "r" : "-");
+                    printf((fileStat.st_mode & S_IWGRP) ? "w" : "-");
+                    printf((fileStat.st_mode & S_IXGRP) ? "x" : "-");
+                    printf((fileStat.st_mode & S_IROTH) ? "r" : "-");
+                    printf((fileStat.st_mode & S_IWOTH) ? "w" : "-");
+                    printf((fileStat.st_mode & S_IXOTH) ? "x" : "-");
+                    printf("  %3hu", fileStat.st_nlink);
                     printf("  %s", pwd->pw_name);
                     printf("  %s", grp->gr_name);
-                    printf("  %5lld", fileStat.st_size);
+                    printf("  %6lld", fileStat.st_size);
                     printf("  %s", time);
                     printf("  %s", ent->d_name);
                 }
@@ -124,4 +131,11 @@ void list_dir(int n_args, char **args) {
     }
 
     if (!input->flag_l) printf("\n");
+
+    free(pwd);
+    free(grp);
+    free(path_tmp);
+    free(path);
+    free(input);
+    free(ent);
 }

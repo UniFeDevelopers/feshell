@@ -58,6 +58,7 @@ int main(int argc, char *argv[]) {
     }
 
     free(args);
+    free(cmd);
 
     return 0;
 }
