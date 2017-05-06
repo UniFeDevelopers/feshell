@@ -34,13 +34,6 @@ int execute(char *args[]) {
 
     if (pid == 0) {
         if (!strcmp(args[0], "ls")) {
-            /*
-            if (execvp("./ls", args) == -1) {
-                fprintf(stderr, "-feshell: %s: command not found\n", args[0]);
-                return 1;
-            }
-            */
-            printf("Funzione in costruzione\n");
             balorda();
             return 0;
         }
