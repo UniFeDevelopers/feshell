@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
         args = NULL;
         n_args = 0;
 
-        if (!strcmp(buff, "\n")) {
+        if (!strcmp(buff, "\n") || !strlen(buff)) {
             shellInfo();
             continue;
         }
@@ -28,16 +28,16 @@ int main(int argc, char *argv[]) {
 
         cmd = strtok(buff, " \t\n;");
 
-        if (strstr(cmd, "exit") != NULL) {
-            exit(0);
-        }
-
         while (cmd != NULL) {
+            if (strstr(cmd, "exit") != NULL) {
+                exit(0);
+            }
+
             args = realloc(args, sizeof (char*) * ++n_args);
 
             if (args == NULL) exit(1);
 
-            if (strlen(cmd)) {
+            if (strlen(cmd) && strcmp(cmd, "\t")&& strcmp(cmd, " ")) {
                 args[n_args - 1] = cmd;
             }
 
