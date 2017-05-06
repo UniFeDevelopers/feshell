@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/wait.h>
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+
+#include "./feshell_lib.h"
 
 void shellInfo() {
     char hostn[1024] = "";
@@ -13,23 +14,7 @@ void shellInfo() {
     printf("\x1b[1m\x1B[32m%s@%s\x1b[0m:\x1b[1m\x1B[34m%s \x1b[0m$ ", getenv("LOGNAME"), hostn, getcwd(currentDirectory, 1024));
 }
 
-int cd(char *args[]) {
-    if (args[1] == NULL) {
-        chdir(getenv("HOME"));
-        return 0;
-    }
-    else{
-        if (chdir(args[1]) == -1) {
-            fprintf(stderr, "-feshell: %s: %s: ", args[0], args[1]);
-            perror("");
-            return -1;
-        }
-    }
-    return 0;
-}
-
 int main(int argc, char *argv[]) {
-    int pid, status;
     char buff[1024];
     char *cmd;
     char **args = NULL;
@@ -68,26 +53,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (n_args) {
-            if (strstr(args[0], "cd") != NULL) {
-                cd(args);
-                shellInfo();
-                continue;
-            }
-
-            pid = fork();
-
-            if (pid == 0) {
-                if (execvp(args[0], args) == -1) {
-                    fprintf(stderr, "-feshell: %s: command not found\n", args[0]);
-                }
-            } else if (pid > 0) {
-                pid = wait(&status);
-                /*
-                 * gestione dello stato
-                 */
-            } else {
-                fprintf(stderr, "-feshell: fork fallita");
-            }
+            execute(args);
         }
 
         shellInfo();

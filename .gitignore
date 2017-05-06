@@ -5,6 +5,3 @@ bin/
 *.o
 *.out
 *.swp
-
-# sub-repo ls
-src/ls/
