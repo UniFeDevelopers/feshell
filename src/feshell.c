@@ -33,11 +33,11 @@ int main(int argc, char *argv[]) {
                 exit(0);
             }
 
-            args = realloc(args, sizeof (char*) * ++n_args);
+            args = (char **) realloc(args, sizeof (char*) * ++n_args);
 
             if (args == NULL) exit(1);
 
-            if (strlen(cmd) && strcmp(cmd, "\t")&& strcmp(cmd, " ")) {
+            if (strlen(cmd) && strcmp(cmd, "\t") && strcmp(cmd, " ")) {
                 args[n_args - 1] = cmd;
             }
 

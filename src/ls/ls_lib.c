@@ -81,20 +81,22 @@ void list_dir(int n_args, char **args) {
     struct group *grp;
     time_t st_time;
     char time[100];
-    char *path_tmp = (char *) malloc(sizeof(char) * strlen(path));
+    char *path_tmp;
 
     ent = readdir(dp);
 
     while (ent != NULL) {
-        strcpy(path_tmp, strrep(path, "~", getenv("HOME")));
-
         if ((!input->flag_a && ent->d_name[0] != '.') || input->flag_a) {
             if (!input->flag_l) {
                 printf("%s\t", ent->d_name);
             }
             else {
+                path_tmp = (char *) malloc(sizeof(char) * (strlen(strrep(path, "~", getenv("HOME"))) + strlen(ent->d_name) + 1));
+
+                strcpy(path_tmp, strrep(path, "~", getenv("HOME")));
                 strcat(path_tmp, "/");
                 strcat(path_tmp, ent->d_name);
+
                 if (stat(path_tmp, &fileStat) < 0) {
                     fprintf(stderr, "-feshell: ls: %s: ", path_tmp);
                     perror("");
@@ -124,6 +126,7 @@ void list_dir(int n_args, char **args) {
                 }
 
                 printf("\n");
+                free(path_tmp);
             }
         }
 
