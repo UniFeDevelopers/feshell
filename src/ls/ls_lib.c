@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <dirent.h>
+#include <sys/stat.h>
 #include <string.h>
 
 parsedInput* parse_input(int n_args, char **args) {
@@ -73,11 +74,33 @@ void list_dir(int n_args, char **args) {
     ent = readdir(dp);
     while (ent != NULL) {
         if ((!input->flag_a && ent->d_name[0] != '.') || input->flag_a) {
-            printf("%s\t", ent->d_name);
+            if (!input->flag_l) {
+                printf("%s\t", ent->d_name);
+            }
+            else {
+                struct stat fileStat;
+                if (stat(ent->d_name, &fileStat) < 0) {
+                    fprintf(stderr, "-feshell: ls: %s: ", ent->d_name);
+                    perror("");
+                }
+                else {
+                    printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+                    printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+                    printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+                    printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+                    printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+                    printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+                    printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+                    printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
+                    printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+                    printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+                    printf("  %s", ent->d_name);
+                }
+
+                printf("\n");
+            }
         }
 
         ent = readdir(dp);
     }
-
-    printf("\n");
 }
