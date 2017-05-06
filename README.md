@@ -30,13 +30,8 @@ Questo supporto deve essere sostenuto anche in casi misti: e.g. `ps aux | grep c
 
 git clone git@bitbucket.org:feshellwithlove/feshell.git
 
-cd feshell/src
-git clone git@bitbucket.org:feshellwithlove/ls.git
-
-cd ./ls/
+cd feshell/
 mkdir bin/
-make
 
-cd ../../
 make
 ```
