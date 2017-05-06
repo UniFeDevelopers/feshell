@@ -5,6 +5,29 @@
 #include <signal.h>
 #include <string.h>
 
+void shellInfo() {
+    char hostn[1024] = "";
+    char currentDirectory[1024] = "";
+    gethostname(hostn, sizeof(hostn));
+    hostn[strlen(hostn) - 6] = '\0';
+    printf("\x1b[1m\x1B[32m%s@%s\x1b[0m:\x1b[1m\x1B[34m%s \x1b[0m$ ", getenv("LOGNAME"), hostn, getcwd(currentDirectory, 1024));
+}
+
+int cd(char *args[]) {
+    if (args[1] == NULL) {
+        chdir(getenv("HOME"));
+        return 0;
+    }
+    else{
+        if (chdir(args[1]) == -1) {
+            fprintf(stderr, "-feshell: %s: %s: ", args[0], args[1]);
+            perror("");
+            return -1;
+        }
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
     int pid, status;
     char buff[1024];
@@ -12,13 +35,13 @@ int main(int argc, char *argv[]) {
     char **args = NULL;
     int n_args;
 
-    printf("> ");
+    shellInfo();
     while (fgets(buff, 1025, stdin) != NULL) {
         args = NULL;
         n_args = 0;
 
         if (!strcmp(buff, "\n")) {
-            printf("> ");
+            shellInfo();
             continue;
         }
         else if (!strcmp(buff, "clear")) {
@@ -45,6 +68,12 @@ int main(int argc, char *argv[]) {
         }
 
         if (n_args) {
+            if (strstr(args[0], "cd") != NULL) {
+                cd(args);
+                shellInfo();
+                continue;
+            }
+
             pid = fork();
 
             if (pid == 0) {
@@ -57,16 +86,16 @@ int main(int argc, char *argv[]) {
                  * gestione dello stato
                  */
             } else {
-                printf("fork fallita");
+                fprintf(stderr, "-feshell: fork fallita");
             }
         }
 
-        printf("> ");
+        shellInfo();
         fflush(stdin);
     }
 
     if (feof(stdin)) {
-        printf("exit");
+        printf("exit\n");
         kill(getppid(), SIGINT);
     }
 
