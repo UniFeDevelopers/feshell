@@ -28,7 +28,7 @@ Questo supporto deve essere sostenuto anche in casi misti: e.g. `ps aux | grep c
 ```
 #!bash
 
-git clone git@bitbucket.org:feshellwithlove/feshell.git
+git clone https://github.com/feshellWithLove/feshell.git
 
 cd feshell/
 mkdir bin/
