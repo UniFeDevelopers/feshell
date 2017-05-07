@@ -34,4 +34,5 @@ cd feshell/
 mkdir bin/
 
 make
+./bin/feshell
 ```
