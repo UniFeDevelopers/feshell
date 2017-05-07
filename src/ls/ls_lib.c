@@ -9,15 +9,36 @@
 #include <string.h>
 #include <time.h>
 
+void usage() {
+    printf("Usage: ls [OPTION]... [FILE]...\n");
+    printf("List information about the FILEs (the current directory by default).\n");
+    printf("Sort entries alphabetically if -t is not specified.\n\n");
+
+    printf("The following options are available:\n");
+    printf("  -a\tdo not ignore entries starting with .\n");
+    printf("  -l\tuse a long listing format\n");
+    printf("  -h\twith -l, print human readable sizes (e.g., 1K 234M 2G)\n");
+    printf("  -t\tsort by modification time, newest first\n\n");
+
+    printf("Colors are used to distinguish file types by default.\n\n");
+    printf("Documentation and code repository at: <https://github.com/feshellWithLove/feshell>\n");
+    printf("Licensed with GNU Public Licence v3\n\n");
+    printf("Authors:\nAntonio Guerra, Nicola Zambello\n");
+}
+
 parsedInput* parse_input(int n_args, char **args) {
     parsedInput *input;
     input = (parsedInput*) malloc(sizeof(parsedInput));
 
-    input->flag_a = input->flag_l = input->flag_t = input->flag_h = 0;
+    input->flag_a = input->flag_l = input->flag_t = input->flag_h = input->no_color = 0;
     input->path = NULL;
 
     int i;
     for (i = 1; i < n_args; i++) {
+        if (strstr(args[i], "--help") != NULL) {
+            usage();
+            return NULL;
+        }
         if (strstr(args[i], "-") != NULL) {
             if (strstr(args[i], "a") != NULL) {
                 input->flag_a = 1;
@@ -33,6 +54,11 @@ parsedInput* parse_input(int n_args, char **args) {
             }
         }
         else {
+            if (strstr(args[i], "--no-color") != NULL) {
+                input->no_color = 1;
+                continue;
+            }
+
             if (input->path != NULL) {
                 fprintf(stderr, "ls: illegal argument exception\nUsage: [-alth] [file ...]\n");
                 return NULL;
@@ -130,9 +156,11 @@ void list_dir(int n_args, char **args) {
                     printf(" %7lld", (long long int) fileStat.st_size);
                     printf(" %s", time);
 
-                    if (S_ISDIR(fileStat.st_mode)) printf("\x1B[34m");
-                    else if (fileStat.st_mode & S_IXUSR) printf("\x1B[31m");
-                    if (S_ISLNK(fileStat.st_mode)) printf("\x1B[35m");
+                    if (!input->no_color) {
+                        if (S_ISDIR(fileStat.st_mode)) printf("\x1B[34m");
+                        else if (fileStat.st_mode & S_IXUSR) printf("\x1B[31m");
+                        if (S_ISLNK(fileStat.st_mode)) printf("\x1B[35m");
+                    }
 
                     printf(" %s\x1B[0m", ent->d_name);
 

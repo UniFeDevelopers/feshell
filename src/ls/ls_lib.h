@@ -3,6 +3,7 @@ typedef struct _parsedInput {
     int flag_l;
     int flag_t;
     int flag_h;
+    int no_color;
     char* path;
 } parsedInput;
 
