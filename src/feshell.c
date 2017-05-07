@@ -8,9 +8,12 @@
 
 int main(int argc, char *argv[]) {
     char buff[1024];
-    char *cmd;
+    char buff_copy[1024];
+    char *cmd = NULL;
     char **args = NULL;
     int n_args;
+    int tokens;
+    int i;
 
     shellInfo();
     while (fgets(buff, 1025, stdin) != NULL) {
@@ -26,23 +29,24 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
+        strcpy(buff_copy, buff);
+        tokens = countTokens(buff_copy, " \t\n;");
+
+        args = (char **) malloc(sizeof(char *) * (tokens + 1));
+        if (args == NULL) exit(1);
+
         cmd = strtok(buff, " \t\n;");
-
-        while (cmd != NULL) {
-            if (strstr(cmd, "exit") != NULL) {
-                exit(0);
-            }
-
-            args = (char **) realloc(args, sizeof (char*) * ++n_args);
-
-            if (args == NULL) exit(1);
-
+        for (i = 0; i < tokens; i++) {
             if (strlen(cmd) && strcmp(cmd, "\t") && strcmp(cmd, " ")) {
-                args[n_args - 1] = cmd;
+                args[i] = (char *) malloc(sizeof(char) * (strlen(cmd) + 1));
+                strcpy(args[i], cmd);
+                n_args++;
             }
 
             cmd = strtok(NULL, " \t\n;");
         }
+
+        args[i] = NULL;
 
         if (n_args) {
             if (execute(n_args, args) == 1) {

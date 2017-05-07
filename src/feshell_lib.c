@@ -17,6 +17,22 @@ void shellInfo() {
     printf("\x1b[1m\x1B[32m%s@%s\x1b[0m:\x1b[1m\x1B[34m%s \x1b[0m$ ", getenv("LOGNAME"), hostn, strrep(getcwd(currentDirectory, 1024), getenv("HOME"), "~"));
 }
 
+int countTokens(char *str, char *limit) {
+    int count = 0;
+    char *token;
+
+    if (str != NULL && strlen(str)) {
+        token = strtok(str, limit);
+
+        while (token != NULL) {
+            count++;
+            token = strtok(NULL, limit);
+        }
+    }
+
+    return count;
+}
+
 int cd(char *args[]) {
     if (args[1] == NULL) {
         chdir(getenv("HOME"));
@@ -50,7 +66,6 @@ int execute(int n_args, char *args[]) {
             if (execvp(args[0], args) == -1) {
                 fprintf(stderr, "-feshell: %s: ", args[0]);
                 perror("");
-                //return 1;
             }
             exit(EXIT_FAILURE);
             return 0;
