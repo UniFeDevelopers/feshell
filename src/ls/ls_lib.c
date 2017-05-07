@@ -39,6 +39,10 @@ parsedInput* parse_input(int n_args, char **args) {
             usage();
             return NULL;
         }
+        if (strstr(args[i], "--no-color") != NULL) {
+            input->no_color = 1;
+            continue;
+        }
         if (strstr(args[i], "-") != NULL) {
             if (strstr(args[i], "a") != NULL) {
                 input->flag_a = 1;
@@ -54,11 +58,6 @@ parsedInput* parse_input(int n_args, char **args) {
             }
         }
         else {
-            if (strstr(args[i], "--no-color") != NULL) {
-                input->no_color = 1;
-                continue;
-            }
-
             if (input->path != NULL) {
                 fprintf(stderr, "ls: illegal argument exception\nUsage: [-alth] [file ...]\n");
                 return NULL;
