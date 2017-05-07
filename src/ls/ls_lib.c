@@ -20,7 +20,9 @@ void usage() {
     printf("  -h\twith -l, print human readable sizes (e.g., 1K 234M 2G)\n");
     printf("  -t\tsort by modification time, newest first\n\n");
 
-    printf("Colors are used to distinguish file types by default.\n\n");
+    printf("Using color to distinguish file types is enabled by default.\n");
+    printf("With --no-color, you can disable this behavior\n\n");
+
     printf("Documentation and code repository at: <https://github.com/feshellWithLove/feshell>\n");
     printf("Licensed with GNU Public Licence v3\n\n");
     printf("Authors:\nAntonio Guerra, Nicola Zambello\n");
