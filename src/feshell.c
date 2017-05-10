@@ -7,8 +7,8 @@
 #include "./feshell_lib.h"
 
 int main(int argc, char *argv[]) {
-    char buff[1024];
-    char buff_copy[1024];
+    char buff[MAX_DIM_BUFF];
+    char buff_copy[MAX_DIM_BUFF];
     char *cmd = NULL;
     char **args = NULL;
     int n_args;
@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     int i;
 
     shellInfo();
-    while (fgets(buff, 1025, stdin) != NULL) {
+    while (fgets(buff, MAX_DIM_BUFF + 1, stdin) != NULL) {
         args = NULL;
         n_args = 0;
 
