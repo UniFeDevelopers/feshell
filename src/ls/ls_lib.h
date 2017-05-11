@@ -1,3 +1,6 @@
+#ifndef _ls_lib
+#define _ls_lib
+
 typedef struct _parsedInput {
     int flag_a;
     int flag_l;
@@ -9,3 +12,5 @@ typedef struct _parsedInput {
 
 void list_dir(int, char **);
 char *strrep(char *, char *, char *);
+
+#endif

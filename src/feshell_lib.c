@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <signal.h>
 #include <string.h>
 
-#include "./ls/ls_lib.h"
 #include "./feshell_lib.h"
+#include "./ls/ls_lib.h"
+#include "./parse_lib/parse_lib.h"
 
 void shellInfo() {
     char hostn[MAX_DIM_BUFF] = "";
@@ -15,22 +17,6 @@ void shellInfo() {
         hostn[strlen(hostn) - 6] = '\0';
     }
     printf("\x1b[1m\x1B[32m%s@%s\x1b[0m:\x1b[1m\x1B[34m%s \x1b[0m$ ", getenv("LOGNAME"), hostn, strrep(getcwd(currentDirectory, MAX_DIM_BUFF), getenv("HOME"), "~"));
-}
-
-int countTokens(char *str, char *limit) {
-    int count = 0;
-    char *token;
-
-    if (str != NULL && strlen(str)) {
-        token = strtok(str, limit);
-
-        while (token != NULL) {
-            count++;
-            token = strtok(NULL, limit);
-        }
-    }
-
-    return count;
 }
 
 int cd(char *args[]) {
