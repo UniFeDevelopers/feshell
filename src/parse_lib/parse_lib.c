@@ -62,12 +62,14 @@ int parse(char *buff) {
     cmd_t *cmd_list, *tmp, *sec_child;
     cmd_list = NULL;
     char **exec_args;
-    int i;
+    int i,index = 0;
     int pid, pid2, status;
 
     tokenize_n_push(buff, &cmd_list);
 
     int pipes[2 * (cmd_list->n_childs - 1)];
+
+
 
     if (cmd_list == NULL) return 1;
 
@@ -89,7 +91,21 @@ int parse(char *buff) {
         pid = fork();
 
         if (pid == 0) {
-            execute(tmp->n_args, exec_args);
+            
+
+            switch(tmp->node_type){
+
+                case 0:
+                    dup2(pipes[index+1],1);
+                    execute(tmp->n_args,exec_args);
+                    break;
+                //case 1:
+                    //dup2(pipes[index],0);
+
+
+
+            }
+
         }
         else if (pid > 0) {
             pid = wait(&status);
@@ -106,8 +122,17 @@ int parse(char *buff) {
         if (sec_child != NULL) {
             pid2 = fork();
 
+
             if (pid2 == 0) {
-                execute(tmp->n_args, exec_args);
+                
+                switch(tmp->node_type){
+
+                    case 0:
+                        dup2(pipes[index],0);
+                        execute(tmp->n_args,exec_args);
+                        break;
+                }
+            
             }
             else if (pid2 > 0) {
                 pid2d = wait(&status);
@@ -119,6 +144,7 @@ int parse(char *buff) {
         }
 
         tmp = tmp->next;
+        index+=2;
     }
 
     return 0;
