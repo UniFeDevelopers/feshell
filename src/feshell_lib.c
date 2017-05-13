@@ -35,14 +35,68 @@ int cd(char *args[]) {
 }
 
 void execute(int n_args, char *args[]) {
-    if (!strcmp(args[0], "ls")) {
+    if (!strcmp(*args, "ls")) {
         list_dir(n_args, args);
     }
     else {
-        if (execvp(args[0], args) == -1) {
-            fprintf(stderr, "-feshell: %s: ", args[0]);
+        if (execvp(*args, args) == -1) {
+            fprintf(stderr, "-feshell: %s: ", *args);
             perror("");
         }
         exit(EXIT_FAILURE);
+    }
+}
+
+void create_pipes(cmd_t *list, int isHead) {
+    cmd_t *tmp;
+    char **exec_args;
+    int pid;
+    int i;
+
+    tmp = list;
+
+    pid = fork();
+
+    if (pid == 0) {
+        exec_args = (char **) malloc(sizeof(char *) * (tmp->n_args + 1));
+        for (i = 0; i < tmp->n_args; i++) {
+            exec_args[i] = (char *) malloc(sizeof(char *) * (strlen(tmp->args[i]) + 1));
+            strcpy(exec_args[i], tmp->args[i]);
+        }
+        exec_args[i] = NULL;
+
+        if (strstr(*exec_args, "cd") != NULL) {
+            cd(exec_args);
+            return;
+        }
+
+        if (tmp->node_type == 0) {
+            if (isHead) {                   // primo elemento lista
+                dup2(pipes[pipe_index + 1], 1);
+            }
+            else if (tmp->next == NULL) {   // ultimo elemento lista
+                dup2(pipes[pipe_index], 0);
+            }
+            else {                          // tutti gli altri
+                dup2(pipes[pipe_index], 0);
+                dup2(pipes[pipe_index + 3], 1);
+            }
+
+            for (i = 0; i <= pipe_index + 1; i++) {
+                close(pipes[i]);
+            }
+
+            execute(tmp->n_args, exec_args);
+        }
+    }
+    else if (pid > 0) {
+        pipe_index += 2;
+        if (tmp->next != NULL) {
+            create_pipes(tmp->next, 0);
+        }
+    }
+    else {
+        fprintf(stderr, "-feshell: fork fallita");
+        return;
     }
 }

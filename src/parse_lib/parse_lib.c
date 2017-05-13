@@ -59,21 +59,18 @@ void appendElement(cmd_t **cmd_list, cmd_t *el, int mode) {
     }
 }
 
-int parse(char *buff) {
-    cmd_t *cmd_list, *tmp, *sec_child;
+cmd_t *parse(char *buff) {
+    cmd_t *cmd_list;
     cmd_list = NULL;
-    char **exec_args;
-    int i,index = 0;
-    int pid, pid2, status;
 
     tokenize_n_push(buff, &cmd_list);
 
-    int pipes[2 * (cmd_list->n_childs - 1)];
+    return cmd_list;
+}
 
-
-
-    if (cmd_list == NULL) return 1;
-
+/*
+    cmd_t *tmp, *sec_child;
+    int pid, pid2, status;
     tmp = cmd_list;
     while (tmp != NULL) {
         exec_args = (char **) malloc(sizeof(char *) * (tmp->n_args + 1));
@@ -87,29 +84,47 @@ int parse(char *buff) {
             return cd(exec_args);
         }
 
-
-        /* primo figlio da collegare in pipe */
         pid = fork();
 
         if (pid == 0) {
-            
-
             switch(tmp->node_type){
-
                 case 0:
                     dup2(pipes[index+1],1);
                     execute(tmp->n_args,exec_args);
+
                     break;
-                //case 1:
-                    //dup2(pipes[index],0);
-
-
-
             }
 
         }
         else if (pid > 0) {
-            pid = wait(&status);
+            sec_child = tmp->next;
+
+            if (sec_child != NULL) {
+                pid2 = fork();
+                exec_args = (char **) malloc(sizeof(char *) * (sec_child->n_args + 1));
+                for (i = 0; i < sec_child->n_args; i++) {
+                    exec_args[i] = (char *) malloc(sizeof(char *) * (strlen(sec_child->args[i]) + 1));
+                    strcpy(exec_args[i], sec_child->args[i]);
+                }
+                exec_args[i] = NULL;
+
+                if (pid2 == 0) {
+                    switch(sec_child->node_type){
+
+                        case 0:
+                            dup2(pipes[index],0);
+                            execute(sec_child->n_args,exec_args);
+                            break;
+                    }
+                }
+                else if (pid2 > 0) {
+                    pid2 = wait(&status);
+                }
+                else {
+                    fprintf(stderr, "-feshell: fork fallita");
+                    return 1;
+                }
+            }
         }
         else {
             fprintf(stderr, "-feshell: fork fallita");
@@ -117,44 +132,14 @@ int parse(char *buff) {
         }
 
 
-        /* secondo figlio da collegare in pipe */
-        sec_child = tmp->next;
-
-        if (sec_child != NULL) {
-            pid2 = fork();
-            exec_args = (char **) malloc(sizeof(char *) * (sec_child->n_args + 1));
-            for (i = 0; i < sec_child->n_args; i++) {
-                exec_args[i] = (char *) malloc(sizeof(char *) * (strlen(sec_child->args[i]) + 1));
-                strcpy(exec_args[i], sec_child->args[i]);
-            }
-            exec_args[i] = NULL;
-
-            if (pid2 == 0) {
-                
-                switch(sec_child->node_type){
-
-                    case 0:
-                        dup2(pipes[index],0);
-                        execute(sec_child->n_args,exec_args);
-                        break;
-                }
-            
-            }
-            else if (pid2 > 0) {
-                pid2 = wait(&status);
-            }
-            else {
-                fprintf(stderr, "-feshell: fork fallita");
-                return 1;
-            }
-        }
 
         tmp = tmp->next;
         index+=2;
     }
 
     return 0;
-}
+    }
+*/
 
 void tokenize_n_push(char *buff, cmd_t **lista) {
     char buff_copy[MAX_DIM_BUFF];
