@@ -122,15 +122,20 @@ int parse(char *buff) {
 
         if (sec_child != NULL) {
             pid2 = fork();
-
+            exec_args = (char **) malloc(sizeof(char *) * (sec_child->n_args + 1));
+            for (i = 0; i < sec_child->n_args; i++) {
+                exec_args[i] = (char *) malloc(sizeof(char *) * (strlen(sec_child->args[i]) + 1));
+                strcpy(exec_args[i], sec_child->args[i]);
+            }
+            exec_args[i] = NULL;
 
             if (pid2 == 0) {
                 
-                switch(tmp->node_type){
+                switch(sec_child->node_type){
 
                     case 0:
                         dup2(pipes[index],0);
-                        execute(tmp->n_args,exec_args);
+                        execute(sec_child->n_args,exec_args);
                         break;
                 }
             
