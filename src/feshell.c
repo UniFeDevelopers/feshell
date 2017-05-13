@@ -23,10 +23,14 @@ int main(void) {
             system("clear");
             continue;
         }
+        else if (strstr(buff, "exit") != NULL) {
+            kill(getppid(), SIGINT);
+            exit(0);
+        }
 
         cmd_list = parse(buff);
 
-        if (cmd_list->n_childs) {
+        if (cmd_list->n_childs > 1) {
             pipe_index = 0;
             pipes = (int *) malloc(sizeof(int) * cmd_list->n_childs);
             create_pipes(cmd_list, 1);
@@ -56,7 +60,7 @@ int main(void) {
     }
 
     if (feof(stdin)) {
-        printf("exit\n");
+        printf("exit");
         kill(getppid(), SIGINT);
     }
 
