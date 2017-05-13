@@ -64,9 +64,10 @@ int parse(char *buff) {
     char **exec_args;
     int i;
     int pid, pid2, status;
-    int *pipes;
 
     tokenize_n_push(buff, &cmd_list);
+
+    int pipes[2 * (cmd_list->n_childs - 1)];
 
     if (cmd_list == NULL) return 1;
 
