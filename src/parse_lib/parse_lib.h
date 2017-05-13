@@ -4,7 +4,7 @@
 #define STRING_MAX_L 1024
 
 typedef struct _cmd_t {
-    int node_type;              // 0 = exec, 1 = file
+    int node_type;              // 0 = exec, 1 = file write, 2 = file append
     char nome[STRING_MAX_L];
     char *args[STRING_MAX_L];
     int n_args;
