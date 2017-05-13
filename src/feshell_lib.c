@@ -39,6 +39,10 @@ void execute(int n_args, char *args[]) {
         list_dir(n_args, args);
     }
     else {
+        for (int i = 0; i < n_args; i++) {
+            printf("%d > %s", i, args[i]);
+        }
+
         if (execvp(*args, args) == -1) {
             fprintf(stderr, "-feshell: %s: ", *args);
             perror("");

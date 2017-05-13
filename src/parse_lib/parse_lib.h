@@ -16,6 +16,7 @@ typedef struct _cmd_t {
 // 0 per < , 1 per tutti gli altri casi
 void appendElement(cmd_t **, cmd_t *, int);
 cmd_t *parse(char *);
+int countTokens(char *, char *);
 void tokenize_n_push(char *, cmd_t **);
 
 #endif

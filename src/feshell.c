@@ -9,12 +9,14 @@
 
 int main(void) {
     char buff[MAX_DIM_BUFF];
+    char buff_copy[MAX_DIM_BUFF];
     cmd_t *cmd_list;
     char **exec_args;
-    int i;
+    int i, pid, status;
 
     shellInfo();
     while (fgets(buff, MAX_DIM_BUFF + 1, stdin) != NULL) {
+        strcpy(buff_copy, buff);
         if (!strcmp(buff, "\n") || !strlen(buff)) {
             shellInfo();
             continue;
@@ -31,6 +33,7 @@ int main(void) {
         cmd_list = parse(buff);
 
         if (cmd_list->n_childs > 1) {
+            printf("\nPIPE\n\n");
             pipe_index = 0;
             pipes = (int *) malloc(sizeof(int) * cmd_list->n_childs);
             create_pipes(cmd_list, 1);
@@ -40,6 +43,7 @@ int main(void) {
             }
         }
         else {
+            printf("\nEXEC\n\n");
             exec_args = (char **) malloc(sizeof(char *) * (cmd_list->n_args + 1));
             for (i = 0; i < cmd_list->n_args; i++) {
                 exec_args[i] = (char *) malloc(sizeof(char *) * (strlen(cmd_list->args[i]) + 1));
@@ -53,7 +57,17 @@ int main(void) {
                 continue;
             }
 
-            execute(cmd_list->n_args, exec_args);
+            pid = fork();
+            if (pid == 0) {
+                execute(cmd_list->n_args, exec_args);
+            }
+            else if (pid > 0) {
+                pid = wait(&status);
+            }
+            else {
+                fprintf(stderr, "-feshell: fork fallita");
+                exit(EXIT_FAILURE);
+            }
         }
 
         shellInfo();
