@@ -31,16 +31,22 @@ void appendCoda(cmd_t **cmd_list, cmd_t *el) {
         head = head->next;
     }
     head->next = el;
+
+    *cmd_list->n_childs++;
 }
 
 void appendTesta(cmd_t **cmd_list, cmd_t *el) {
     el->next = *cmd_list;
+    el->n_childs = *cmd_list->n_childs + 1;
+    *cmd_list->n_childs = 0;
+
     *cmd_list = el;
 }
 
 void appendElement(cmd_t **cmd_list, cmd_t *el, int mode) {
     if (*cmd_list == NULL) {
         *cmd_list = el;
+        *cmd_list->n_childs = 1;
     }
     else {
         if (mode) {
@@ -53,19 +59,18 @@ void appendElement(cmd_t **cmd_list, cmd_t *el, int mode) {
 }
 
 int parse(char *buff) {
-    cmd_t *cmd_list, *tmp;
+    cmd_t *cmd_list, *tmp, *sec_child;
     cmd_list = NULL;
     char **exec_args;
     int i;
-    int pid, status;
+    int pid, pid2, status;
+    int *pipes;
 
     tokenize_n_push(buff, &cmd_list);
 
     if (cmd_list == NULL) return 1;
 
     tmp = cmd_list;
-
-
     while (tmp != NULL) {
         exec_args = (char **) malloc(sizeof(char *) * (tmp->n_args + 1));
         for (i = 0; i < tmp->n_args; i++) {
@@ -78,6 +83,8 @@ int parse(char *buff) {
             return cd(exec_args);
         }
 
+
+        /* primo figlio da collegare in pipe */
         pid = fork();
 
         if (pid == 0) {
@@ -89,6 +96,25 @@ int parse(char *buff) {
         else {
             fprintf(stderr, "-feshell: fork fallita");
             return 1;
+        }
+
+
+        /* secondo figlio da collegare in pipe */
+        sec_child = tmp->next;
+
+        if (sec_child != NULL) {
+            pid2 = fork();
+
+            if (pid2 == 0) {
+                execute(tmp->n_args, exec_args);
+            }
+            else if (pid2 > 0) {
+                pid2d = wait(&status);
+            }
+            else {
+                fprintf(stderr, "-feshell: fork fallita");
+                return 1;
+            }
         }
 
         tmp = tmp->next;
@@ -132,6 +158,7 @@ void tokenize_n_push(char *buff, cmd_t **lista) {
                 }
                 new->n_args = n_args;
                 new->next = NULL;
+                new->n_childs = 0;
 
                 appendElement(lista, new, 1);
 
@@ -184,6 +211,7 @@ void tokenize_n_push(char *buff, cmd_t **lista) {
     }
     new->n_args = n_args;
     new->next = NULL;
+    new->n_childs = 0;
     args[j] = NULL;
 
     appendElement(lista, new, 1);
