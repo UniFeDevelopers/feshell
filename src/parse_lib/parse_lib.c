@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/wait.h>
 
 #include "../feshell_lib.h"
 #include "./parse_lib.h"
@@ -27,26 +28,26 @@ void appendCoda(cmd_t **cmd_list, cmd_t *el) {
     cmd_t *head;
 
     head = *cmd_list;
+    head->n_childs++;
+
     while (head->next != NULL) {
         head = head->next;
     }
     head->next = el;
-
-    *cmd_list->n_childs++;
 }
 
 void appendTesta(cmd_t **cmd_list, cmd_t *el) {
     el->next = *cmd_list;
-    el->n_childs = *cmd_list->n_childs + 1;
-    *cmd_list->n_childs = 0;
+    el->n_childs = el->next->n_childs + 1;
+    el->next->n_childs = 0;
 
     *cmd_list = el;
 }
 
 void appendElement(cmd_t **cmd_list, cmd_t *el, int mode) {
     if (*cmd_list == NULL) {
+        el->n_childs = 1;
         *cmd_list = el;
-        *cmd_list->n_childs = 1;
     }
     else {
         if (mode) {
@@ -110,7 +111,7 @@ int parse(char *buff) {
                 execute(tmp->n_args, exec_args);
             }
             else if (pid2 > 0) {
-                pid2d = wait(&status);
+                pid2 = wait(&status);
             }
             else {
                 fprintf(stderr, "-feshell: fork fallita");
