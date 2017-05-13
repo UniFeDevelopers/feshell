@@ -49,6 +49,7 @@ int main(void) {
 
             if (strstr(*exec_args, "cd") != NULL) {
                 cd(exec_args);
+                shellInfo();
                 continue;
             }
 
