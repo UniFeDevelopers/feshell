@@ -55,35 +55,42 @@ void appendElement(cmd_t **cmd_list, cmd_t *el, int mode) {
 int parse(char *buff) {
     cmd_t *cmd_list, *tmp;
     cmd_list = NULL;
+    char **exec_args;
+    int i;
+    int pid, status;
 
     tokenize_n_push(buff, &cmd_list);
 
     if (cmd_list == NULL) return 1;
 
     tmp = cmd_list;
-    char **exec_args;
-    int status;
-    int i;
+
 
     while (tmp != NULL) {
         exec_args = (char **) malloc(sizeof(char *) * (tmp->n_args + 1));
         for (i = 0; i < tmp->n_args; i++) {
-            exec_args[i] = (char *) malloc(sizeof(char *) * strlen(tmp->args[i]));
+            exec_args[i] = (char *) malloc(sizeof(char *) * (strlen(tmp->args[i]) + 1));
             strcpy(exec_args[i], tmp->args[i]);
         }
         exec_args[i] = NULL;
 
-        if (fork() == 0) {
-            if (execvp(exec_args[0], exec_args) == -1) {
-                fprintf(stderr, "-feshell: %s: ", exec_args[0]);
-                perror("");
-                exit(1);
-            }
-            exit(0);
+        if (strstr(exec_args[0], "cd") != NULL) {
+            return cd(exec_args);
+        }
+
+        pid = fork();
+
+        if (pid == 0) {
+            execute(tmp->n_args, exec_args);
+        }
+        else if (pid > 0) {
+            pid = wait(&status);
         }
         else {
-            wait(&status);
+            fprintf(stderr, "-feshell: fork fallita");
+            return 1;
         }
+
         tmp = tmp->next;
     }
 

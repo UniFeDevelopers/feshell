@@ -34,38 +34,15 @@ int cd(char *args[]) {
     return 0;
 }
 
-int execute(int n_args, char *args[]) {
-    int pid, status;
-
-    if (strstr(args[0], "cd") != NULL) {
-        return cd(args);
+void execute(int n_args, char *args[]) {
+    if (!strcmp(args[0], "ls")) {
+        list_dir(n_args, args);
     }
-
-    pid = fork();
-
-    if (pid == 0) {
-        if (!strcmp(args[0], "ls")) {
-            list_dir(n_args, args);
-            return 0;
+    else {
+        if (execvp(args[0], args) == -1) {
+            fprintf(stderr, "-feshell: %s: ", args[0]);
+            perror("");
         }
-        else {
-            if (execvp(args[0], args) == -1) {
-                fprintf(stderr, "-feshell: %s: ", args[0]);
-                perror("");
-            }
-            exit(EXIT_FAILURE);
-            return 0;
-        }
-    } else if (pid > 0) {
-        pid = wait(&status);
-        /*
-         * gestione dello stato
-         * wait return child process exit value
-         */
-    } else {
-        fprintf(stderr, "-feshell: fork fallita");
-        return 1;
+        exit(EXIT_FAILURE);
     }
-
-    return 0;
 }
