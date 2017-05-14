@@ -33,17 +33,39 @@ int main(void) {
         cmd_list = parse(buff);
 
         if (cmd_list->n_childs > 1) {
-            printf("\nPIPE\n\n");
             pipe_index = 0;
-            pipes = (int *) malloc(sizeof(int) * cmd_list->n_childs);
-            create_pipes(cmd_list, 1);
+            n_pipes = cmd_list->n_childs - 1;
+            pipes = (int *) malloc(sizeof(int) * 2 * n_pipes);
 
-            for (i = 0; i < MAX_DIM_BUFF; i++) {
-                close(pipes[i]);
+            pid = fork();
+            if (pid == 0) {
+                create_pipes(cmd_list, 1);
+
+                for (i = 0; i < n_pipes + 1; i++) {
+                    printf("\n---- CHILD #%d ----", i);
+                    printf("\nnode_type: %d, nome: %s", cmd_list->node_type, cmd_list->nome);
+                    printf("\nargs (%d): ", cmd_list->n_args);
+                    for (int j = 0; j < cmd_list->n_args; j++) {
+                        printf("%s ", cmd_list->args[j]);
+                    }
+                    printf("\n");
+
+                    cmd_list = cmd_list->next;
+                }
+
+                for (i = 0; i < 2 * n_pipes; i++) {
+                    close(pipes[i]);
+                }
+            }
+            else if (pid > 0) {
+                pid = wait(&status);
+            }
+            else {
+                fprintf(stderr, "-feshell: fork fallita");
+                exit(EXIT_FAILURE);
             }
         }
         else {
-            printf("\nEXEC\n\n");
             exec_args = (char **) malloc(sizeof(char *) * (cmd_list->n_args + 1));
             for (i = 0; i < cmd_list->n_args; i++) {
                 exec_args[i] = (char *) malloc(sizeof(char *) * (strlen(cmd_list->args[i]) + 1));

@@ -11,6 +11,7 @@ void execute(int, char **);
 void create_pipes(cmd_t *, int);
 
 int *pipes;
+int n_pipes;
 int pipe_index;
 
 #endif

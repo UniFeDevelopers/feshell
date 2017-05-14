@@ -148,7 +148,7 @@ void tokenize_n_push(char *buff, cmd_t **lista) {
 
     new = (cmd_t *) malloc(sizeof(cmd_t));
 
-    new->node_type = 1;
+    new->node_type = is_file_out;
     strcpy(new->nome, args[0]);
     for (j = 0; j < n_args; j++) {
         new->args[j] = (char *) malloc(sizeof(char) * strlen(args[j]));
