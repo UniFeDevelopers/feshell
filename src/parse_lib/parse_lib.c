@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/wait.h>
 
 #include "../feshell_lib.h"
 #include "./parse_lib.h"
@@ -27,6 +28,8 @@ void appendCoda(cmd_t **cmd_list, cmd_t *el) {
     cmd_t *head;
 
     head = *cmd_list;
+    head->n_childs++;
+
     while (head->next != NULL) {
         head = head->next;
     }
@@ -35,11 +38,15 @@ void appendCoda(cmd_t **cmd_list, cmd_t *el) {
 
 void appendTesta(cmd_t **cmd_list, cmd_t *el) {
     el->next = *cmd_list;
+    el->n_childs = el->next->n_childs + 1;
+    el->next->n_childs = 0;
+
     *cmd_list = el;
 }
 
 void appendElement(cmd_t **cmd_list, cmd_t *el, int mode) {
     if (*cmd_list == NULL) {
+        el->n_childs = 1;
         *cmd_list = el;
     }
     else {
@@ -52,49 +59,13 @@ void appendElement(cmd_t **cmd_list, cmd_t *el, int mode) {
     }
 }
 
-int parse(char *buff) {
-    cmd_t *cmd_list, *tmp;
+cmd_t *parse(char *buff) {
+    cmd_t *cmd_list;
     cmd_list = NULL;
-    char **exec_args;
-    int i;
-    int pid, status;
 
     tokenize_n_push(buff, &cmd_list);
 
-    if (cmd_list == NULL) return 1;
-
-    tmp = cmd_list;
-
-
-    while (tmp != NULL) {
-        exec_args = (char **) malloc(sizeof(char *) * (tmp->n_args + 1));
-        for (i = 0; i < tmp->n_args; i++) {
-            exec_args[i] = (char *) malloc(sizeof(char *) * (strlen(tmp->args[i]) + 1));
-            strcpy(exec_args[i], tmp->args[i]);
-        }
-        exec_args[i] = NULL;
-
-        if (strstr(exec_args[0], "cd") != NULL) {
-            return cd(exec_args);
-        }
-
-        pid = fork();
-
-        if (pid == 0) {
-            execute(tmp->n_args, exec_args);
-        }
-        else if (pid > 0) {
-            pid = wait(&status);
-        }
-        else {
-            fprintf(stderr, "-feshell: fork fallita");
-            return 1;
-        }
-
-        tmp = tmp->next;
-    }
-
-    return 0;
+    return cmd_list;
 }
 
 void tokenize_n_push(char *buff, cmd_t **lista) {
@@ -124,7 +95,7 @@ void tokenize_n_push(char *buff, cmd_t **lista) {
 
                 new = (cmd_t *) malloc(sizeof(cmd_t));
 
-                new->node_type = 1;
+                new->node_type = 0;
                 strcpy(new->nome, args[0]);
                 for (j = 0; j < n_args; j++) {
                     new->args[j] = (char *) malloc(sizeof(char) * strlen(args[j]));
@@ -132,6 +103,7 @@ void tokenize_n_push(char *buff, cmd_t **lista) {
                 }
                 new->n_args = n_args;
                 new->next = NULL;
+                new->n_childs = 0;
 
                 appendElement(lista, new, 1);
 
@@ -176,7 +148,7 @@ void tokenize_n_push(char *buff, cmd_t **lista) {
 
     new = (cmd_t *) malloc(sizeof(cmd_t));
 
-    new->node_type = 1;
+    new->node_type = is_file_out;
     strcpy(new->nome, args[0]);
     for (j = 0; j < n_args; j++) {
         new->args[j] = (char *) malloc(sizeof(char) * strlen(args[j]));
@@ -184,6 +156,7 @@ void tokenize_n_push(char *buff, cmd_t **lista) {
     }
     new->n_args = n_args;
     new->next = NULL;
+    new->n_childs = 0;
     args[j] = NULL;
 
     appendElement(lista, new, 1);
