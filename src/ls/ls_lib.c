@@ -8,6 +8,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
+
+char *MEASURE_UNITS[] = {"B", "K", "M", "G", "T"};
 
 void usage() {
     printf("Usage: ls [OPTION]... [FILE]...\n");
@@ -115,6 +118,8 @@ void list_dir(int n_args, char **args) {
     char time[100];
     char *path_tmp;
     char *actualpath;
+    double size;
+    char um[2];
 
     ent = readdir(dp);
 
@@ -154,7 +159,18 @@ void list_dir(int n_args, char **args) {
                     printf(" %4hu", (unsigned short) fileStat.st_nlink);
                     printf(" %8s", pwd->pw_name);
                     printf(" %8s", grp->gr_name);
-                    printf(" %7lld", (long long int) fileStat.st_size);
+
+                    if (!input->flag_h) {
+                        printf(" %7lld", (long long int) fileStat.st_size);
+                    }
+                    else {
+                        size = log((double) fileStat.st_size) / log(1024);
+                        size = (fileStat.st_size - (long int) ceil(size) < (long int) floor(size) - fileStat.st_size ? ceil(size) : floor(size));
+                        strcpy(um, MEASURE_UNITS[(int) size]);
+                        size = (double) fileStat.st_size / pow(1024, size);
+                        printf(" %7.3g%s", size, um);
+                    }
+
                     printf(" %s", time);
 
                     if (!input->no_color) {

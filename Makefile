@@ -1,7 +1,7 @@
 all: feshell
 
 ls_lib.o: ./src/ls/ls_lib.c
-	gcc -Wall -c ./src/ls/ls_lib.c
+	gcc -Wall -c ./src/ls/ls_lib.c 
 	mv ls_lib.o ./src/ls/
 
 parse_lib.o: ./src/parse_lib/parse_lib.c
@@ -17,7 +17,7 @@ feshell.o: ./src/feshell.c
 	mv feshell.o src/
 
 feshell: ls_lib.o parse_lib.o feshell_lib.o feshell.o
-	gcc -Wall -o feshell ./src/ls/ls_lib.o ./src/parse_lib/parse_lib.o ./src/feshell_lib.o ./src/feshell.o
+	gcc -Wall -o feshell ./src/ls/ls_lib.o ./src/parse_lib/parse_lib.o ./src/feshell_lib.o ./src/feshell.o -lm
 	mv feshell bin/
 
 clean:
