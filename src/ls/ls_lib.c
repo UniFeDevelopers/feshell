@@ -27,7 +27,7 @@ void usage() {
     printf("With --no-color, you can disable this behavior\n\n");
 
     printf("Documentation and code repository at: <https://github.com/feshellWithLove/feshell>\n");
-    printf("Licensed with GNU Public Licence v3\n\n");
+    printf("Licensed with GNU General Public Licence v3\n\n");
     printf("Authors:\nAntonio Guerra, Nicola Zambello\n");
 }
 
