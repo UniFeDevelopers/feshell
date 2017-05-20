@@ -90,26 +90,16 @@ char *strrep(char *str, char *orig, char *rep) {
     return buffer;
 }
 
+/*
+int timecmp(const void* a, const void* b) {
+    return time_A < time_B;
+}
+*/
+
 void list_dir(int n_args, char **args) {
     parsedInput *input;
     struct dirent *ent;
     DIR *dp = NULL;
-
-    input = parse_input(n_args, args);
-
-    if (input == NULL) {
-        exit(EXIT_FAILURE);
-    }
-
-    char currentDirectory[1024] = "";
-    char *path = input->path != NULL ? input->path : getcwd(currentDirectory, 1024);
-
-    dp = opendir((const char*) strrep(path, "~", getenv("HOME")));
-
-    if (dp == NULL) {
-        fprintf(stderr, "-feshell: ls: %s: ", path);
-        perror("");
-    }
 
     struct stat fileStat;
     struct passwd *pwd;
@@ -120,94 +110,169 @@ void list_dir(int n_args, char **args) {
     char *actualpath;
     double size;
     char um[2];
+    char buffer[1024];
+    int i;
+
+    char currentDirectory[1024] = "";
+
+    dir_entry entries[MAX_NUM_DIR];
+    dir_entry ent_tmp;
+    strcpy(ent_tmp.data, "");
+    strcpy(ent_tmp.name, "");
+    ent_tmp.time = 0;
+
+    int num_ents = 0;
+
+    input = parse_input(n_args, args);
+
+    if (input == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
+    char *path = input->path != NULL ? input->path : getcwd(currentDirectory, 1024);
+
+    dp = opendir((const char*) strrep(path, "~", getenv("HOME")));
+
+    if (dp == NULL) {
+        fprintf(stderr, "-feshell: ls: %s: ", path);
+        perror("");
+    }
 
     ent = readdir(dp);
 
     while (ent != NULL) {
         if ((!input->flag_a && ent->d_name[0] != '.') || input->flag_a) {
+            strcpy(ent_tmp.data, "");
+
+            path_tmp = (char *) malloc(sizeof(char) * (strlen(strrep(path, "~", getenv("HOME"))) + strlen(ent->d_name) + 1));
+
+            strcpy(path_tmp, strrep(path, "~", getenv("HOME")));
+            strcat(path_tmp, "/");
+            strcat(path_tmp, ent->d_name);
+
+            if (lstat(path_tmp, &fileStat) < 0) {
+                fprintf(stderr, "-feshell: ls: %s: ", path_tmp);
+                perror("");
+                exit(1);
+            }
+
             if (!input->flag_l) {
-                printf((S_ISDIR(fileStat.st_mode)) ? "\x1B[34m" : "\x1B[0m");
-                printf("%s\t", ent->d_name);
+                sprintf(buffer, (S_ISDIR(fileStat.st_mode)) ? "\x1B[34m" : "\x1B[0m");
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, "%s\t", ent->d_name);
+                strcat(ent_tmp.data, buffer);
             }
             else {
-                path_tmp = (char *) malloc(sizeof(char) * (strlen(strrep(path, "~", getenv("HOME"))) + strlen(ent->d_name) + 1));
+                pwd = getpwuid(fileStat.st_uid);
+                grp = getgrgid(fileStat.st_gid);
+                st_time = fileStat.st_mtime;
+                ent_tmp.time = st_time;
+                strftime(time, 100, "%d %b %H:%M", localtime(&st_time));
 
-                strcpy(path_tmp, strrep(path, "~", getenv("HOME")));
-                strcat(path_tmp, "/");
-                strcat(path_tmp, ent->d_name);
+                sprintf(buffer, (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, (fileStat.st_mode & S_IROTH) ? "r" : "-");
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, " %4hu", (unsigned short) fileStat.st_nlink);
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, " %8s", pwd->pw_name);
+                strcat(ent_tmp.data, buffer);
+                sprintf(buffer, " %8s", grp->gr_name);
+                strcat(ent_tmp.data, buffer);
 
-                if (lstat(path_tmp, &fileStat) < 0) {
-                    fprintf(stderr, "-feshell: ls: %s: ", path_tmp);
-                    perror("");
+                if (!input->flag_h) {
+                    sprintf(buffer, " %7lld", (long long int) fileStat.st_size);
+                    strcat(ent_tmp.data, buffer);
                 }
                 else {
-                    pwd = getpwuid(fileStat.st_uid);
-                    grp = getgrgid(fileStat.st_gid);
-                    st_time = fileStat.st_mtime;
-                    strftime(time, 100, "%d %b %H:%M", localtime(&st_time));
-
-                    printf((S_ISDIR(fileStat.st_mode)) ? "d" : "-");
-                    printf((fileStat.st_mode & S_IRUSR) ? "r" : "-");
-                    printf((fileStat.st_mode & S_IWUSR) ? "w" : "-");
-                    printf((fileStat.st_mode & S_IXUSR) ? "x" : "-");
-                    printf((fileStat.st_mode & S_IRGRP) ? "r" : "-");
-                    printf((fileStat.st_mode & S_IWGRP) ? "w" : "-");
-                    printf((fileStat.st_mode & S_IXGRP) ? "x" : "-");
-                    printf((fileStat.st_mode & S_IROTH) ? "r" : "-");
-                    printf((fileStat.st_mode & S_IWOTH) ? "w" : "-");
-                    printf((fileStat.st_mode & S_IXOTH) ? "x" : "-");
-                    printf(" %4hu", (unsigned short) fileStat.st_nlink);
-                    printf(" %8s", pwd->pw_name);
-                    printf(" %8s", grp->gr_name);
-
-                    if (!input->flag_h) {
-                        printf(" %7lld", (long long int) fileStat.st_size);
-                    }
-                    else {
-                        size = log((double) fileStat.st_size) / log(1024);
-                        size = (fileStat.st_size - (long int) ceil(size) < (long int) floor(size) - fileStat.st_size ? ceil(size) : floor(size));
-                        strcpy(um, MEASURE_UNITS[(int) size]);
-                        size = (double) fileStat.st_size / pow(1024, size);
-                        printf(" %7.3g%s", size, um);
-                    }
-
-                    printf(" %s", time);
-
-                    if (!input->no_color) {
-                        if (S_ISDIR(fileStat.st_mode)) printf("\x1B[34m");
-                        else if (fileStat.st_mode & S_IXUSR) printf("\x1B[31m");
-                        if (S_ISLNK(fileStat.st_mode)) printf("\x1B[35m");
-                    }
-
-                    printf(" %s\x1B[0m", ent->d_name);
-
-                    if (S_ISDIR(fileStat.st_mode)) printf("/");
-                    else if (S_ISLNK(fileStat.st_mode)) {
-                        printf("@ -> ");
-                        actualpath = realpath(path_tmp, NULL);
-                        if (actualpath != NULL) {
-                            printf("%s", actualpath);
-                        }
-                    }
-                    else if (fileStat.st_mode & S_IXUSR) printf("*");
+                    size = log((double) fileStat.st_size) / log(1024);
+                    size = (fileStat.st_size - (long int) ceil(size) < (long int) floor(size) - fileStat.st_size ? ceil(size) : floor(size));
+                    strcpy(um, MEASURE_UNITS[(int) size]);
+                    size = (double) fileStat.st_size / pow(1024, size);
+                    sprintf(buffer, " %7.3g%s", size, um);
+                    strcat(ent_tmp.data, buffer);
                 }
 
-                printf("\n");
-                free(path_tmp);
+                sprintf(buffer, " %s", time);
+                strcat(ent_tmp.data, buffer);
+
+                if (!input->no_color) {
+                    if (S_ISDIR(fileStat.st_mode)) {
+                        sprintf(buffer, "\x1B[34m");
+                        strcat(ent_tmp.data, buffer);
+                    }
+                    else if (fileStat.st_mode & S_IXUSR) {
+                        sprintf(buffer, "\x1B[31m");
+                        strcat(ent_tmp.data, buffer);
+                    }
+                    if (S_ISLNK(fileStat.st_mode)) {
+                        sprintf(buffer, "\x1B[35m");
+                        strcat(ent_tmp.data, buffer);
+                    }
+                }
+
+                sprintf(buffer, " %s\x1B[0m", ent->d_name);
+                strcat(ent_tmp.data, buffer);
+                strcpy(ent_tmp.name, ent->d_name);
+
+                if (S_ISDIR(fileStat.st_mode)) {
+                    sprintf(buffer, "/");
+                    strcat(ent_tmp.data, buffer);
+                }
+                else if (S_ISLNK(fileStat.st_mode)) {
+                    sprintf(buffer, "@ -> ");
+                    strcat(ent_tmp.data, buffer);
+                    actualpath = realpath(path_tmp, NULL);
+                    if (actualpath != NULL) {
+                        sprintf(buffer, "%s", actualpath);
+                        strcat(ent_tmp.data, buffer);
+                    }
+                }
+                else if (fileStat.st_mode & S_IXUSR) {
+                    sprintf(buffer, "*");
+                    strcat(ent_tmp.data, buffer);
+                }
+
+                sprintf(buffer, "\n");
+                strcat(ent_tmp.data, buffer);
             }
+
+            strcpy(entries[num_ents].data, ent_tmp.data);
+            strcpy(entries[num_ents].name, ent_tmp.name);
+            entries[num_ents].time = ent_tmp.time;
+            num_ents++;
+
+            free(path_tmp);
         }
 
         ent = readdir(dp);
     }
 
-    if (!input->flag_l) printf("\n");
+    if (input->flag_t) {
+        //qsort(dir_content, num_ents, sizeof(struct dirent *), timecmp);
+    }
 
-    /*
-    free(pwd);
-    free(grp);
-    free(path);
-    free(input);
-    free(ent);
-    free(actualpath);
-    */
+    for (i = 0; i < num_ents; i++) {
+        printf("%s", entries[i].data);
+    }
+
+    if (!input->flag_l) {
+        printf("\n");
+    }
 }
