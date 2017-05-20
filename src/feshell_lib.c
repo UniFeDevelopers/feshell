@@ -54,7 +54,7 @@ void execute(int n_args, char *args[]) {
 void create_pipes(cmd_t *list, int isHead) {
     cmd_t *tmp;
     char **exec_args;
-    int pid;
+    int pid, status;
     int i;
 
     tmp = list;
@@ -90,14 +90,15 @@ void create_pipes(cmd_t *list, int isHead) {
                 close(pipes[i]);
             }
 
-            execute(tmp->n_args, exec_args);
+            if (tmp->next != NULL) {
+                create_pipes(tmp->next, 0);
+                execute(tmp->n_args, exec_args);
+            }
         }
     }
     else if (pid > 0) {
         pipe_index += 2;
-        if (tmp->next != NULL) {
-            create_pipes(tmp->next, 0);
-        }
+        pid = wait(&status);
     }
     else {
         fprintf(stderr, "-feshell: fork fallita");

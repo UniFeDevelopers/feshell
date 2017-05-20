@@ -37,23 +37,13 @@ int main(void) {
             n_pipes = cmd_list->n_childs - 1;
             pipes = (int *) malloc(sizeof(int) * 2 * n_pipes);
 
+            for (i = 0; i < n_pipes; i++) {
+                pipe(pipes + 2 * i);
+            }
+
             pid = fork();
             if (pid == 0) {
                 create_pipes(cmd_list, 1);
-
-                /*
-                for (i = 0; i < n_pipes + 1; i++) {
-                    printf("\n---- CHILD #%d ----", i);
-                    printf("\nnode_type: %d, nome: %s", cmd_list->node_type, cmd_list->nome);
-                    printf("\nargs (%d): ", cmd_list->n_args);
-                    for (int j = 0; j < cmd_list->n_args; j++) {
-                        printf("%s ", cmd_list->args[j]);
-                    }
-                    printf("\n");
-
-                    cmd_list = cmd_list->next;
-                }
-                */
 
                 for (i = 0; i < 2 * n_pipes; i++) {
                     close(pipes[i]);
@@ -95,7 +85,6 @@ int main(void) {
         }
 
         shellInfo();
-        fflush(stdin);
     }
 
     if (feof(stdin)) {
