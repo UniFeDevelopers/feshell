@@ -90,11 +90,12 @@ char *strrep(char *str, char *orig, char *rep) {
     return buffer;
 }
 
-/*
 int timecmp(const void* a, const void* b) {
-    return time_A < time_B;
+    dir_entry dir_a = *(dir_entry *) a;
+    dir_entry dir_b = *(dir_entry *) b;
+
+    return dir_a.time < dir_b.time;
 }
-*/
 
 void list_dir(int n_args, char **args) {
     parsedInput *input;
@@ -119,7 +120,6 @@ void list_dir(int n_args, char **args) {
     dir_entry ent_tmp;
     strcpy(ent_tmp.data, "");
     strcpy(ent_tmp.name, "");
-    ent_tmp.time = 0;
 
     int num_ents = 0;
 
@@ -143,6 +143,7 @@ void list_dir(int n_args, char **args) {
     while (ent != NULL) {
         if ((!input->flag_a && ent->d_name[0] != '.') || input->flag_a) {
             strcpy(ent_tmp.data, "");
+            strcpy(ent_tmp.name, "");
 
             path_tmp = (char *) malloc(sizeof(char) * (strlen(strrep(path, "~", getenv("HOME"))) + strlen(ent->d_name) + 1));
 
@@ -156,6 +157,9 @@ void list_dir(int n_args, char **args) {
                 exit(1);
             }
 
+            st_time = fileStat.st_mtime;
+            ent_tmp.time = st_time;
+
             if (!input->flag_l) {
                 sprintf(buffer, (S_ISDIR(fileStat.st_mode)) ? "\x1B[34m" : "\x1B[0m");
                 strcat(ent_tmp.data, buffer);
@@ -165,8 +169,6 @@ void list_dir(int n_args, char **args) {
             else {
                 pwd = getpwuid(fileStat.st_uid);
                 grp = getgrgid(fileStat.st_gid);
-                st_time = fileStat.st_mtime;
-                ent_tmp.time = st_time;
                 strftime(time, 100, "%d %b %H:%M", localtime(&st_time));
 
                 sprintf(buffer, (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
@@ -265,7 +267,7 @@ void list_dir(int n_args, char **args) {
     }
 
     if (input->flag_t) {
-        //qsort(dir_content, num_ents, sizeof(struct dirent *), timecmp);
+        qsort(entries, num_ents, sizeof(dir_entry), timecmp);
     }
 
     for (i = 0; i < num_ents; i++) {

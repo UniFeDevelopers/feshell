@@ -2,7 +2,7 @@
 
 #ifndef _ls_lib
 #define _ls_lib
-#define MAX_NUM_DIR 4096
+#define MAX_NUM_DIR 1024
 
 typedef struct _parsedInput {
     int flag_a;
