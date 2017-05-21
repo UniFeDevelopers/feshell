@@ -90,11 +90,46 @@ char *strrep(char *str, char *orig, char *rep) {
     return buffer;
 }
 
-int timecmp(const void* a, const void* b) {
-    dir_entry dir_a = *(dir_entry *) a;
-    dir_entry dir_b = *(dir_entry *) b;
+void merge(dir_entry *a, int p, int q, int r) {
+    int i, j, k;
+    int n1 = q - p + 1;
+    int n2 = r - q;
+    dir_entry *L = malloc(n1 * sizeof(dir_entry));
+    dir_entry *R = malloc(n2 * sizeof(dir_entry));
+    memcpy(L, a + p, n1 * sizeof(dir_entry));
+    memcpy(R, a + q + 1, n2 * sizeof(dir_entry));
+    for (i = 0, j = 0, k = p; k <= r; k++) {
+        if (i == n1) a[k] = R[j++];
+        else if (j == n2) a[k] = L[i++];
+        else if (L[i].time <= R[j].time) a[k] = L[i++];
+        else a[k] = R[j++];
+    }
+    free(L);
+    free(R);
+    return;
+}
 
-    return dir_a.time < dir_b.time;
+void insertion_sort_mod(dir_entry *a, int p, int r) {
+    for (int i = p + 1; i <=r; i++) {
+        dir_entry key = a[i];
+        int j = i - 1;
+        while (j >= p && a[j].time < key.time) {
+            a[j + 1] = a[j];
+            j = j - 1;
+        }
+        a[j + 1] = key;
+    }
+}
+
+void mixed_sort_insertion(dir_entry *a, int p, int r, int K) {
+    if (p >= r) return;
+    if (r - p < K) insertion_sort_mod(a, p, r);
+    else {
+        int q = (p + r) / 2;
+        mixed_sort_insertion(a, p, q, K);
+        mixed_sort_insertion(a, q + 1, r, K);
+        merge(a, p, q, r);
+    }
 }
 
 void list_dir(int n_args, char **args) {
@@ -267,7 +302,7 @@ void list_dir(int n_args, char **args) {
     }
 
     if (input->flag_t) {
-        qsort(entries, num_ents, sizeof(dir_entry), timecmp);
+        mixed_sort_insertion(entries, 0, num_ents, 50);
     }
 
     for (i = 0; i < num_ents; i++) {
