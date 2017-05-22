@@ -37,6 +37,7 @@ int cd(char *args[]) {
 void execute(int n_args, char *args[]) {
     if (!strcmp(*args, "ls")) {
         list_dir(n_args, args);
+        exit(0);
     }
     else {
         for (int i = 0; i < n_args; i++) {
@@ -47,7 +48,7 @@ void execute(int n_args, char *args[]) {
             fprintf(stderr, "-feshell: %s: ", *args);
             perror("");
         }
-        exit(EXIT_FAILURE);
+        exit(0);
     }
 }
 
