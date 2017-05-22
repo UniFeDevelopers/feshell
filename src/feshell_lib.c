@@ -35,11 +35,12 @@ int cd(char *args[]) {
 }
 
 void execute(int n_args, char *args[]) {
+    int i;
     if (!strcmp(*args, "ls")) {
         list_dir(n_args, args);
     }
     else {
-        for (int i = 0; i < n_args; i++) {
+        for (i = 0; i < n_args; i++) {
             printf("%d > %s", i, args[i]);
         }
 

@@ -110,7 +110,8 @@ void merge(dir_entry *a, int p, int q, int r) {
 }
 
 void insertion_sort_mod(dir_entry *a, int p, int r) {
-    for (int i = p + 1; i <=r; i++) {
+    int i;
+    for (i = p + 1; i <=r; i++) {
         dir_entry key = a[i];
         int j = i - 1;
         while (j >= p && a[j].time < key.time) {
