@@ -90,7 +90,7 @@ char *strrep(char *str, char *orig, char *rep) {
     return buffer;
 }
 
-void merge(dir_entry *a, int p, int q, int r) {
+void merge_time(dir_entry *a, int p, int q, int r) {
     int i, j, k;
     int n1 = q - p + 1;
     int n2 = r - q;
@@ -109,7 +109,7 @@ void merge(dir_entry *a, int p, int q, int r) {
     return;
 }
 
-void insertion_sort_mod(dir_entry *a, int p, int r) {
+void insertion_sort_time(dir_entry *a, int p, int r) {
     int i;
     for (i = p + 1; i <=r; i++) {
         dir_entry key = a[i];
@@ -122,14 +122,14 @@ void insertion_sort_mod(dir_entry *a, int p, int r) {
     }
 }
 
-void mixed_sort_insertion(dir_entry *a, int p, int r, int K) {
+void mixed_sort_time(dir_entry *a, int p, int r, int K) {
     if (p >= r) return;
-    if (r - p < K) insertion_sort_mod(a, p, r);
+    if (r - p < K) insertion_sort_time(a, p, r);
     else {
         int q = (p + r) / 2;
-        mixed_sort_insertion(a, p, q, K);
-        mixed_sort_insertion(a, q + 1, r, K);
-        merge(a, p, q, r);
+        mixed_sort_time(a, p, q, K);
+        mixed_sort_time(a, q + 1, r, K);
+        merge_time(a, p, q, r);
     }
 }
 
@@ -303,7 +303,7 @@ void list_dir(int n_args, char **args) {
     }
 
     if (input->flag_t) {
-        mixed_sort_insertion(entries, 0, num_ents, 50);
+        mixed_sort_time(entries, 0, num_ents, 50);
     }
 
     for (i = 0; i < num_ents; i++) {
