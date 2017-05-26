@@ -143,7 +143,7 @@ void list_dir(int n_args, char **args) {
     struct group *grp;
     time_t st_time;
     char time[100];
-    char *path_tmp;
+    char path_tmp[1024];
     char *actualpath;
     double size;
     char um[2];
@@ -181,7 +181,7 @@ void list_dir(int n_args, char **args) {
             strcpy(ent_tmp.data, "");
             strcpy(ent_tmp.name, "");
 
-            path_tmp = (char *) malloc(sizeof(char) * (strlen(strrep(path, "~", getenv("HOME"))) + strlen(ent->d_name) + 1));
+            //path_tmp = (char *) malloc(sizeof(char) * (strlen(strrep(path, "~", getenv("HOME"))) + strlen(ent->d_name) + 1));
 
             strcpy(path_tmp, strrep(path, "~", getenv("HOME")));
             strcat(path_tmp, "/");
@@ -296,7 +296,7 @@ void list_dir(int n_args, char **args) {
             entries[num_ents].time = ent_tmp.time;
             num_ents++;
 
-            free(path_tmp);
+            //free(path_tmp);
         }
 
         ent = readdir(dp);

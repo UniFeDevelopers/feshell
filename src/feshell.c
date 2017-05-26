@@ -61,7 +61,7 @@ int main(void) {
         else {
             exec_args = (char **) malloc(sizeof(char *) * (cmd_list->n_args + 1));
             for (i = 0; i < cmd_list->n_args; i++) {
-                exec_args[i] = (char *) malloc(sizeof(char *) * (strlen(cmd_list->args[i]) + 1));
+                exec_args[i] = (char *) malloc(sizeof(char) * (strlen(cmd_list->args[i]) + 1));
                 strcpy(exec_args[i], cmd_list->args[i]);
             }
             exec_args[i] = NULL;
