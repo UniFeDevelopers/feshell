@@ -239,8 +239,14 @@ void list_dir(int n_args, char **args) {
                     strcat(ent_tmp.data, buffer);
                 }
                 else {
-                    size = log((double) fileStat.st_size) / log(1024);
-                    size = (fileStat.st_size - (long int) ceil(size) < (long int) floor(size) - fileStat.st_size ? ceil(size) : floor(size));
+                    if (fileStat.st_size) {
+                        size = log((double) fileStat.st_size) / log(1024);
+                        size = (fileStat.st_size - (long int) ceil(size) < (long int) floor(size) - fileStat.st_size ? ceil(size) : floor(size));
+                    }
+                    else {
+                        size = (double) fileStat.st_size;
+                    }
+
                     strcpy(um, MEASURE_UNITS[(int) size]);
                     size = (double) fileStat.st_size / pow(1024, size);
                     sprintf(buffer, " %7.3g%s", size, um);
