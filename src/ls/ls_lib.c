@@ -162,7 +162,7 @@ void list_dir(int n_args, char **args) {
     input = parse_input(n_args, args);
 
     if (input == NULL) {
-        exit(EXIT_FAILURE);
+        return; // ha già stampato usage()
     }
 
     char *path = input->path != NULL ? input->path : getcwd(currentDirectory, 1024);
