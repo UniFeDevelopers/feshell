@@ -30,7 +30,7 @@ int main(void) {
 
         cmd_list = parse(buff);
 
-        n_cmds = cmd_list->n_childs - 1;
+        n_cmds = cmd_list->n_childs;
         fork_pipes(n_cmds, cmd_list);
 
         shellInfo();

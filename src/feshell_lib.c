@@ -38,12 +38,28 @@ void execute(int n_args, char *args[]) {
     if (!strcmp(*args, "ls")) {
         list_dir(n_args, args);
     }
+    else if (!strcmp(*args, "cd")) {
+        cd(args);
+    }
     else {
+        int i;
+        char **exec_args;
+
+        exec_args = (char **) malloc(sizeof(char *) * (n_args + 1));
+
+        for (i = 0; i < n_args; i++) {
+            exec_args[i] = (char *) malloc(sizeof(char *) * (strlen(args[i]) + 1));
+            strcpy(exec_args[i], args[i]);
+        }
+        exec_args[i] = NULL;
+
         if (execvp(*args, args) == -1) {
             fprintf(stderr, "-feshell: %s: ", *args);
             perror("");
             exit(1);
         }
+
+        free(exec_args);
     }
 }
 
@@ -89,4 +105,5 @@ void fork_pipes(int n, cmd_t *list) {
     }
 
     execute(n, tmp->args);
+    //exec_proc(in, 1, tmp, n);
 }
