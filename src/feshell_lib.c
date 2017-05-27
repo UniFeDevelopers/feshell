@@ -35,75 +35,58 @@ int cd(char *args[]) {
 }
 
 void execute(int n_args, char *args[]) {
-    int i;
     if (!strcmp(*args, "ls")) {
         list_dir(n_args, args);
-        exit(0);
     }
     else {
-        for (i = 0; i < n_args; i++) {
-            printf("%d > %s", i, args[i]);
-        }
-
         if (execvp(*args, args) == -1) {
             fprintf(stderr, "-feshell: %s: ", *args);
             perror("");
+            exit(1);
         }
-        exit(0);
     }
 }
 
-void create_pipes(cmd_t *list, int isHead) {
-    cmd_t *tmp;
-    char **exec_args;
-    int pid, status;
+void exec_proc(int in, int out, cmd_t *cmd, int n) {
+    pid_t pid;
+
+    if ((pid = fork()) == 0) {
+        if (!in) {
+            dup2(in, 0);
+            close(in);
+        }
+
+        if (out != 1) {
+            dup2(out, 1);
+            close(out);
+        }
+
+        execute(n, cmd->args);
+    }
+}
+
+void fork_pipes(int n, cmd_t *list) {
     int i;
+    int in, pipes[2];
+    cmd_t *tmp;
 
     tmp = list;
 
-    pid = fork();
+    in = 0;
 
-    if (pid == 0) {
-        exec_args = (char **) malloc(sizeof(char *) * (tmp->n_args + 1));
-        for (i = 0; i < tmp->n_args; i++) {
-            exec_args[i] = (char *) malloc(sizeof(char *) * (strlen(tmp->args[i]) + 1));
-            strcpy(exec_args[i], tmp->args[i]);
-        }
-        exec_args[i] = NULL;
+    for (i = 0; i < n - 1; i++) {
+        pipe(pipes);
 
-        if (strstr(*exec_args, "cd") != NULL) {
-            cd(exec_args);
-            return;
-        }
+        exec_proc(in, pipes[1], tmp, n);
+        close(pipes[1]);
 
-        if (tmp->node_type == 0) {
-            if (isHead) {                   // primo elemento lista
-                dup2(pipes[pipe_index + 1], 1);
-            }
-            else if (tmp->next == NULL) {   // ultimo elemento lista
-                dup2(pipes[pipe_index], 0);
-            }
-            else {                          // tutti gli altri
-                dup2(pipes[pipe_index], 0);
-                dup2(pipes[pipe_index + 3], 1);
-            }
-
-            for (i = 0; i <= pipe_index + 1; i++) {
-                close(pipes[i]);
-            }
-
-            if (tmp->next != NULL) {
-                create_pipes(tmp->next, 0);
-                execute(tmp->n_args, exec_args);
-            }
-        }
+        in = pipes[0];
+        tmp = tmp->next;
     }
-    else if (pid > 0) {
-        pipe_index += 2;
-        pid = wait(&status);
+
+    if (!in) {
+        dup2(in, 0);
     }
-    else {
-        fprintf(stderr, "-feshell: fork fallita");
-        return;
-    }
+
+    execute(n, tmp->args);
 }
