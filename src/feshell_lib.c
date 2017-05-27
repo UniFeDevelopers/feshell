@@ -35,11 +35,11 @@ int cd(char *args[]) {
 }
 
 void execute(int n_args, char *args[]) {
-    if (!strcmp(*args, "ls")) {
-        list_dir(n_args, args);
-    }
-    else if (!strcmp(*args, "cd")) {
+    if (!strcmp(*args, "cd")) {
         cd(args);
+    }
+    else if (!strcmp(*args, "ls")) {
+        list_dir(n_args, args);
     }
     else {
         int i;
@@ -56,14 +56,13 @@ void execute(int n_args, char *args[]) {
         if (execvp(*args, args) == -1) {
             fprintf(stderr, "-feshell: %s: ", *args);
             perror("");
-            exit(1);
         }
 
         free(exec_args);
     }
 }
 
-void exec_proc(int in, int out, cmd_t *cmd, int n) {
+void exec_proc(int in, int out, cmd_t *cmd) {
     pid_t pid;
 
     if ((pid = fork()) == 0) {
@@ -77,7 +76,7 @@ void exec_proc(int in, int out, cmd_t *cmd, int n) {
             close(out);
         }
 
-        execute(n, cmd->args);
+        execute(cmd->n_args, cmd->args);
     }
 }
 
@@ -93,7 +92,7 @@ void fork_pipes(int n, cmd_t *list) {
     for (i = 0; i < n - 1; i++) {
         pipe(pipes);
 
-        exec_proc(in, pipes[1], tmp, n);
+        exec_proc(in, pipes[1], tmp);
         close(pipes[1]);
 
         in = pipes[0];
@@ -104,6 +103,6 @@ void fork_pipes(int n, cmd_t *list) {
         dup2(in, 0);
     }
 
-    execute(n, tmp->args);
-    //exec_proc(in, 1, tmp, n);
+    execute(tmp->n_args, tmp->args);
+    //exec_proc(in, 1, tmp);
 }
