@@ -27,7 +27,6 @@ int main(void) {
             continue;
         }
         else if (strstr(buff, "exit") != NULL) {
-            kill(getppid(), SIGINT);
             exit(0);
         }
 
@@ -89,8 +88,8 @@ int main(void) {
     }
 
     if (feof(stdin)) {
-        printf("exit");
-        kill(getppid(), SIGINT);
+        printf("exit\n");
+        exit(0);
     }
 
     return 0;
