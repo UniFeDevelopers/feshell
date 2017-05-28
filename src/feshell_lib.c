@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include "./feshell_lib.h"
 #include "./ls/ls_lib.h"
@@ -66,7 +67,7 @@ void exec_proc(int in, int out, cmd_t *cmd) {
     pid_t pid;
 
     if ((pid = fork()) == 0) {
-        if (!in) {
+        if (in != 0) {
             dup2(in, 0);
             close(in);
         }
@@ -92,10 +93,18 @@ void fork_pipes(int n, cmd_t *list) {
     for (i = 0; i < n - 1; i++) {
         pipe(pipes);
 
+        if (tmp->node_type == 1) {
+            pipes[1] = open(tmp->nome, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+        }
+        else if (tmp->node_type == 2) {
+            pipes[1] = open(tmp->nome, O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
+        }
+
         exec_proc(in, pipes[1], tmp);
         close(pipes[1]);
 
         in = pipes[0];
+
         tmp = tmp->next;
     }
 
@@ -104,5 +113,4 @@ void fork_pipes(int n, cmd_t *list) {
     }
 
     execute(tmp->n_args, tmp->args);
-    //exec_proc(in, 1, tmp);
 }
