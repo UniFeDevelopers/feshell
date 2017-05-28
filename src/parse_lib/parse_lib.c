@@ -63,12 +63,6 @@ cmd_t *parse(char *buff) {
     cmd_t *cmd_list;
     cmd_list = NULL;
 
-    tokenize_n_push(buff, &cmd_list);
-
-    return cmd_list;
-}
-
-void tokenize_n_push(char *buff, cmd_t **lista) {
     char buff_copy[MAX_DIM_BUFF];
     char *cmd = NULL;
     char **args = NULL;
@@ -105,7 +99,7 @@ void tokenize_n_push(char *buff, cmd_t **lista) {
                 new->next = NULL;
                 new->n_childs = 0;
 
-                appendElement(lista, new, 1);
+                appendElement(&cmd_list, new, 1);
 
                 args = (char **) malloc(sizeof(char *) * (tokens + 1));
                 n_args = 0;
@@ -114,14 +108,14 @@ void tokenize_n_push(char *buff, cmd_t **lista) {
                 // cose sul file
                 is_file_out = 1;        // distingui
 
-                //appendElement(lista, new, 1);
+                //appendElement(&cmd_list, new, 1);
             }
             else if (!strcmp(cmd, "<")) {
                 // crea struct
                 // cose sul file successivo
                 is_file_in = 1;
 
-                //appendElement(lista, new, 0);
+                //appendElement(&cmd_list, new, 0);
 
                 args = (char **) malloc(sizeof(char *) * (tokens + 1));
                 n_args = 0;
@@ -159,8 +153,10 @@ void tokenize_n_push(char *buff, cmd_t **lista) {
     new->n_childs = 0;
     args[j] = NULL;
 
-    appendElement(lista, new, 1);
+    appendElement(&cmd_list, new, 1);
 
     free(args);
     free(cmd);
+
+    return cmd_list;
 }
