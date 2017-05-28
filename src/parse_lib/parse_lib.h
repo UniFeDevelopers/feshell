@@ -2,6 +2,8 @@
 #define _cmd
 
 #define STRING_MAX_L 1024
+#define TESTA 0
+#define CODA 1
 
 typedef struct _cmd_t {
     int node_type;              // 0 = exec, 1 = file write, 2 = file append
