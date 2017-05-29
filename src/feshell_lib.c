@@ -43,23 +43,10 @@ void execute(int n_args, char *args[]) {
         list_dir(n_args, args);
     }
     else {
-        int i;
-        char **exec_args;
-
-        exec_args = (char **) malloc(sizeof(char *) * (n_args + 1));
-
-        for (i = 0; i < n_args; i++) {
-            exec_args[i] = (char *) malloc(sizeof(char) * (strlen(args[i]) + 1));
-            strcpy(exec_args[i], args[i]);
-        }
-        exec_args[i] = NULL;
-
         if (execvp(*args, args) == -1) {
             fprintf(stderr, "-feshell: %s: ", *args);
             perror("");
         }
-
-        free(exec_args);
     }
 }
 
