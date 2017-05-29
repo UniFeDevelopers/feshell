@@ -172,6 +172,7 @@ void list_dir(int n_args, char **args) {
     if (dp == NULL) {
         fprintf(stderr, "-feshell: ls: %s: ", path);
         perror("");
+        return;
     }
 
     ent = readdir(dp);
