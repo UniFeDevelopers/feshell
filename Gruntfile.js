@@ -21,6 +21,13 @@ module.exports = function(grunt) {
                     reload: true
                 },
                 tasks: ['exec:make']
+            },
+            libraries: {
+                files: ['./src/*.h', './src/ls/*.h', './src/parse_lib/*.h'],
+                options: {
+                    reload: true
+                },
+                tasks: ['exec:make']
             }
         }
     });
