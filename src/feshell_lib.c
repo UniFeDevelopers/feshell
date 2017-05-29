@@ -36,10 +36,7 @@ int cd(char *args[]) {
 }
 
 void execute(int n_args, char *args[]) {
-    if (!strcmp(*args, "cd")) {
-        cd(args);
-    }
-    else if (!strcmp(*args, "ls")) {
+    if (!strcmp(*args, "ls")) {
         list_dir(n_args, args);
     }
     else {

@@ -36,6 +36,9 @@ int main(void) {
         if (n_cmds > 1) {
             fork_pipes(n_cmds, cmd_list);
         }
+        else if (!strcmp(cmd_list->args[0], "cd")) {
+            cd(cmd_list->args);
+        }
         else {
             if ((pid = fork()) == 0) {
                 execute(cmd_list->n_args, cmd_list->args);
