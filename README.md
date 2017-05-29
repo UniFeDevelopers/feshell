@@ -35,18 +35,6 @@ make
 ./bin/feshell
 ```
 
-## Uso ##
-
-La **shell** si comporta come bash e rispetta le specifiche del presente documento e si avvia con:
-```
-./bin/feshell
-```
-
-Per quanto riguarda **ls**, si veda la pagina di help per le opzioni disponibili:
-```
-ls --help
-```
-
 ### Compilazione automatizzata ###
 
 Per la fase di sviluppo abbiamo automatizzato la compilazione con `grunt`.
@@ -65,4 +53,16 @@ sudo apt-get install nodejs
 e successivamente installare **grunt** e le sue dipendenze all'interno della directory principale del repository:
 ```
 npm install
+```
+
+## Uso ##
+
+La **shell** si comporta come bash e rispetta le specifiche del presente documento e si avvia con:
+```
+./bin/feshell
+```
+
+Per quanto riguarda **ls**, si veda la pagina di help per le opzioni disponibili:
+```
+ls --help
 ```
