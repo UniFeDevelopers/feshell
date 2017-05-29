@@ -23,7 +23,7 @@ Non è importante che la versione della shell e di ls realizzate dallo studente 
 *feshell* deve essere in grado di supportare la redirezione (<, > e ») e le pipe (|).
 Questo supporto deve essere sostenuto anche in casi misti: e.g. `ps aux | grep ciccio > processiDiCiccio`
 
-## Installazione ##
+## Setup ##
 
 ```
 git clone https://github.com/feshellWithLove/feshell.git
@@ -37,9 +37,9 @@ make
 
 ## Uso ##
 
-La shell si comporta come bash e rispetta le specifiche del presente documento.
+La **shell** si comporta come bash e rispetta le specifiche del presente documento.
 
-Per quanto riguarda `ls`, si veda la pagina di help per le opzioni disponibili:
+Per quanto riguarda **ls**, si veda la pagina di help per le opzioni disponibili:
 ```
 ls --help
 ```
