@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include <sys/wait.h>
 #include <string.h>
 
 #include "./feshell_lib.h"
@@ -12,8 +11,8 @@ int main(void) {
     char buff[MAX_DIM_BUFF];
     char buff_copy[MAX_DIM_BUFF];
     cmd_t *cmd_list;
-    char **exec_args;
-    int i, pid, status;
+    int pid, status;
+    int n_cmds;
 
     shellInfo();
     while (fgets(buff, MAX_DIM_BUFF + 1, stdin) != NULL) {
@@ -32,55 +31,18 @@ int main(void) {
 
         cmd_list = parse(buff);
 
-        if (cmd_list->n_childs > 1) {
-            pipe_index = 0;
-            n_pipes = cmd_list->n_childs - 1;
-            pipes = (int *) malloc(sizeof(int) * 2 * n_pipes);
+        n_cmds = cmd_list->n_childs;
 
-            for (i = 0; i < n_pipes; i++) {
-                pipe(pipes + 2 * i);
-            }
-
-            pid = fork();
-            if (pid == 0) {
-                create_pipes(cmd_list, 1);
-
-                for (i = 0; i < 2 * n_pipes; i++) {
-                    close(pipes[i]);
-                }
-            }
-            else if (pid > 0) {
-                pid = wait(&status);
-            }
-            else {
-                fprintf(stderr, "-feshell: fork fallita");
-                exit(EXIT_FAILURE);
-            }
+        if (n_cmds > 1) {
+            fork_pipes(n_cmds, cmd_list);
         }
         else {
-            exec_args = (char **) malloc(sizeof(char *) * (cmd_list->n_args + 1));
-            for (i = 0; i < cmd_list->n_args; i++) {
-                exec_args[i] = (char *) malloc(sizeof(char) * (strlen(cmd_list->args[i]) + 1));
-                strcpy(exec_args[i], cmd_list->args[i]);
-            }
-            exec_args[i] = NULL;
-
-            if (strstr(*exec_args, "cd") != NULL) {
-                cd(exec_args);
-                shellInfo();
-                continue;
-            }
-
-            pid = fork();
-            if (pid == 0) {
-                execute(cmd_list->n_args, exec_args);
-            }
-            else if (pid > 0) {
-                pid = wait(&status);
+            if ((pid = fork()) == 0) {
+                execute(cmd_list->n_args, cmd_list->args);
+                exit(0);
             }
             else {
-                fprintf(stderr, "-feshell: fork fallita");
-                exit(EXIT_FAILURE);
+                wait(&status);
             }
         }
 
@@ -89,7 +51,6 @@ int main(void) {
 
     if (feof(stdin)) {
         printf("exit\n");
-        exit(0);
     }
 
     return 0;

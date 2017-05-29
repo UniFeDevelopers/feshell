@@ -50,7 +50,7 @@ void appendElement(cmd_t **cmd_list, cmd_t *el, int mode) {
         *cmd_list = el;
     }
     else {
-        if (mode) {
+        if (mode == CODA) {
             appendCoda(cmd_list, el);
         }
         else {
@@ -59,24 +59,35 @@ void appendElement(cmd_t **cmd_list, cmd_t *el, int mode) {
     }
 }
 
+void createElement(cmd_t **cmd_list, char **args, int n_args, int is_file_in, int is_file_out) {
+    int i;
+    cmd_t *new;
+
+    new = (cmd_t *) malloc(sizeof(cmd_t));
+
+    new->node_type = is_file_out;
+    strcpy(new->nome, args[0]);
+    for (i = 0; i < n_args; i++) {
+        new->args[i] = (char *) malloc(sizeof(char) * strlen(args[i]));
+        strcpy(new->args[i], args[i]);
+    }
+    new->n_args = n_args;
+    new->next = NULL;
+    new->n_childs = 0;
+
+    appendElement(cmd_list, new, is_file_in ? TESTA : CODA);
+}
+
 cmd_t *parse(char *buff) {
     cmd_t *cmd_list;
     cmd_list = NULL;
 
-    tokenize_n_push(buff, &cmd_list);
-
-    return cmd_list;
-}
-
-void tokenize_n_push(char *buff, cmd_t **lista) {
     char buff_copy[MAX_DIM_BUFF];
     char *cmd = NULL;
     char **args = NULL;
     int n_args = 0;
     int tokens;
-    int i, j;
-
-    cmd_t *new;
+    int i;
 
     int is_file_out = 0;
     int is_file_in = 0;
@@ -91,76 +102,68 @@ void tokenize_n_push(char *buff, cmd_t **lista) {
     for (i = 0; i < tokens; i++) {
         if (strlen(cmd) && strcmp(cmd, "\t") && strcmp(cmd, " ")) {
             if (!strcmp(cmd, "|")) {
-                // crea struct
+                createElement(&cmd_list, args, n_args, is_file_in, is_file_out);
 
-                new = (cmd_t *) malloc(sizeof(cmd_t));
-
-                new->node_type = 0;
-                strcpy(new->nome, args[0]);
-                for (j = 0; j < n_args; j++) {
-                    new->args[j] = (char *) malloc(sizeof(char) * strlen(args[j]));
-                    strcpy(new->args[j], args[j]);
-                }
-                new->n_args = n_args;
-                new->next = NULL;
-                new->n_childs = 0;
-
-                appendElement(lista, new, 1);
+                is_file_in = is_file_in ? 0 : is_file_in;
 
                 args = (char **) malloc(sizeof(char *) * (tokens + 1));
                 n_args = 0;
-            }
-            else if (!strcmp(cmd, ">>") || !strcmp(cmd, ">")) {
-                // cose sul file
-                is_file_out = 1;        // distingui
 
-                //appendElement(lista, new, 1);
+                is_file_out = 0;
+            }
+            else if (!strcmp(cmd, ">")) {
+                createElement(&cmd_list, args, n_args, is_file_in, is_file_out);
+
+                is_file_in = is_file_in ? 0 : is_file_in;
+
+                args = (char **) malloc(sizeof(char *) * (tokens + 1));
+                n_args = 0;
+
+                is_file_out = 1;
+            }
+            else if (!strcmp(cmd, ">>")) {
+                createElement(&cmd_list, args, n_args, is_file_in, is_file_out);
+
+                is_file_in = is_file_in ? 0 : is_file_in;
+
+                args = (char **) malloc(sizeof(char *) * (tokens + 1));
+                n_args = 0;
+
+                is_file_out = 2;
             }
             else if (!strcmp(cmd, "<")) {
-                // crea struct
-                // cose sul file successivo
-                is_file_in = 1;
+                createElement(&cmd_list, args, n_args, is_file_in, is_file_out);
 
-                //appendElement(lista, new, 0);
+                is_file_in = is_file_in ? 0 : is_file_in;
 
                 args = (char **) malloc(sizeof(char *) * (tokens + 1));
                 n_args = 0;
+
+                is_file_in = 1;
+                is_file_out = 0;
             }
             else {
                 if (is_file_in) {
                     args[0] = "cat";
                     args[1] = (char *) malloc(sizeof(char) * (STRING_MAX_L + 1));
                     strcpy(args[1], cmd);
+                    n_args = 2;
                 }
                 else {
                     args[n_args] = (char *) malloc(sizeof(char) * (STRING_MAX_L + 1));
                     strcpy(args[n_args], cmd);
                     n_args++;
                 }
-
-                is_file_in = 0;
-                is_file_out = 0;
             }
         }
 
         cmd = strtok(NULL, " \t\n;");
     }
 
-    new = (cmd_t *) malloc(sizeof(cmd_t));
-
-    new->node_type = is_file_out;
-    strcpy(new->nome, args[0]);
-    for (j = 0; j < n_args; j++) {
-        new->args[j] = (char *) malloc(sizeof(char) * strlen(args[j]));
-        strcpy(new->args[j], args[j]);
-    }
-    new->n_args = n_args;
-    new->next = NULL;
-    new->n_childs = 0;
-    args[j] = NULL;
-
-    appendElement(lista, new, 1);
+    createElement(&cmd_list, args, n_args, is_file_in, is_file_out);
 
     free(args);
     free(cmd);
+
+    return cmd_list;
 }
