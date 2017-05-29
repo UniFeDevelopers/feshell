@@ -20,7 +20,7 @@ della shell stessa, una propria versione di ls.
 
 Non è importante che la versione della shell e di ls realizzate dallo studente siano in grado di supportare tutte le opzioni che bash ed ls sono in grado di supportare.
 
-*feshell* deve essere in grado di supportare la redirezione (<, > e ») e le pipe (|).
+*feshell* deve essere in grado di supportare la redirezione (<, > e >>) e le pipe (|).
 Questo supporto deve essere sostenuto anche in casi misti: e.g. `ps aux | grep ciccio > processiDiCiccio`
 
 ## Setup ##
@@ -57,7 +57,7 @@ npm install
 
 ## Uso ##
 
-La **shell** si comporta come bash e rispetta le specifiche del presente documento e si avvia con:
+La **shell** si comporta come bash, rispetta le specifiche del presente documento e si avvia con:
 ```
 ./bin/feshell
 ```
