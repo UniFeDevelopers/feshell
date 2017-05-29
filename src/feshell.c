@@ -11,6 +11,7 @@ int main(void) {
     char buff[MAX_DIM_BUFF];
     char buff_copy[MAX_DIM_BUFF];
     cmd_t *cmd_list;
+    int pid, status;
     int n_cmds;
 
     shellInfo();
@@ -31,7 +32,19 @@ int main(void) {
         cmd_list = parse(buff);
 
         n_cmds = cmd_list->n_childs;
-        fork_pipes(n_cmds, cmd_list);
+
+        if (n_cmds > 1) {
+            fork_pipes(n_cmds, cmd_list);
+        }
+        else {
+            if ((pid = fork()) == 0) {
+                execute(cmd_list->n_args, cmd_list->args);
+                exit(0);
+            }
+            else {
+                wait(&status);
+            }
+        }
 
         shellInfo();
     }

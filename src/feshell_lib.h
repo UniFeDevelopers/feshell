@@ -7,6 +7,7 @@
 
 void shellInfo();
 int cd(char **);
+void execute(int, char **);
 void fork_pipes(int, cmd_t *);
 
 #endif
