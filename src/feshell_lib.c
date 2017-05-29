@@ -63,54 +63,111 @@ void execute(int n_args, char *args[]) {
     }
 }
 
-void exec_proc(int in, int out, cmd_t *cmd) {
+void fork_pipes(int n, cmd_t *list) {
+    int i, j, status;
+    //int fd;
     pid_t pid;
 
+    cmd_t *tmp = list;
+
+    int *pipes = (int *) malloc(sizeof(int) * 2 * (n - 1));
+
+
+    // *** primo processo ***
+
+    pipe(pipes);
+
     if ((pid = fork()) == 0) {
-        if (in != 0) {
-            dup2(in, 0);
-            close(in);
+        if (dup2(pipes[1], 1) == -1) {
+            fprintf(stderr, "-feshell: Errore  pipe: i = 0, pipe[1)]");
+            perror("");
         }
 
-        if (out != 1) {
-            dup2(out, 1);
-            close(out);
-        }
-
-        execute(cmd->n_args, cmd->args);
-    }
-}
-
-void fork_pipes(int n, cmd_t *list) {
-    int i;
-    int in, pipes[2];
-    cmd_t *tmp;
-
-    tmp = list;
-
-    in = 0;
-
-    for (i = 0; i < n - 1; i++) {
-        pipe(pipes);
-
-        if (tmp->node_type == 1) {
-            pipes[1] = open(tmp->nome, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-        }
-        else if (tmp->node_type == 2) {
-            pipes[1] = open(tmp->nome, O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
-        }
-
-        exec_proc(in, pipes[1], tmp);
+        close(pipes[0]);
         close(pipes[1]);
 
-        in = pipes[0];
+        execute(tmp->n_args, tmp->args);
+    }
+
+    tmp = tmp->next;
+
+
+    // *** processi intermedi ***
+
+    for (i = 1; i < n - 1; i++) {
+        pipe(pipes + 2 * i);
+
+        if ((pid = fork()) == 0) {
+            /*
+            if (tmp->node_type == 1) {
+                //pipes[1] = open(tmp->nome, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+                fd = open(tmp->nome, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+                dup2(pipes[1], fd);
+                close(pipes[0]);
+                close(pipes[1]);
+            }
+            else if (tmp->node_type == 2) {
+                fd = open(tmp->nome, O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
+                dup2(pipes[1], fd);
+                close(pipes[0]);
+                close(pipes[1]);
+            }
+            */
+
+            if (dup2(pipes[2 * (i - 1)], 0) == -1) {
+                fprintf(stderr, "-feshell: Errore  pipe: i = %d, pipe[2 * (i - 1)]", i);
+                perror("");
+            }
+
+            if (dup2(pipes[(2 * i) + 1], 1) == -1) {
+                fprintf(stderr, "-feshell: Errore  pipe: i = %d, pipe[2 * i + 1]", i);
+                perror("");
+            }
+
+            for (j = 0; j <= (2 * i) + 1; j++) {
+                close(pipes[j]);
+            }
+
+            //close(pipes[2 * (i - 1)]);
+            //close(pipes[2 * (i - 1) + 1]);
+            //close(pipes[(2 * i)]);
+            //close(pipes[(2 * i) + 1]);
+
+            execute(tmp->n_args, tmp->args);
+        }
 
         tmp = tmp->next;
     }
 
-    if (!in) {
-        dup2(in, 0);
+
+    // *** ultimo processo ***
+
+    if ((pid = fork()) == 0) {
+        if (dup2(pipes[2 * (n - 2)], 0) == -1) {
+            fprintf(stderr, "-feshell: Errore  pipe: i = last, pipe[2 * (n - 2)]");
+            perror("");
+        }
+
+        for (j = 0; j <= 2 * (n - 2) + 1; j++) {
+            close(pipes[j]);
+        }
+
+        //close(pipes[2 * (n - 2)]);
+        //close(pipes[2 * (n - 2) + 1]);
+
+        execute(tmp->n_args, tmp->args);
     }
 
-    execute(tmp->n_args, tmp->args);
+
+    // chiude tutte le pipe
+    for (i = 0; i < 2 * (n - 1); i++) {
+        close(pipes[i]);
+    }
+
+    // aspetta che tutti i figli termino
+    for (i = 0; i < n; i++) {
+        wait(&status);
+    }
+
+    free(pipes);
 }
