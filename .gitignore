@@ -1,12 +1,9 @@
 .DS_Store
 
-# file compilati
 bin/
+node_modules/
 
-# file temporanei compilazione
 *.o
 *.out
-
-# file temporanei vim
 *.swp
 *.swo

@@ -4,7 +4,7 @@
 
 ### Introduzione ###
 
-Lo scopo di questo progetto è creare una shell, che sia usabile e che sia in grado di supportare redirect e pipe. 
+Lo scopo di questo progetto è creare una shell, che sia usabile e che sia in grado di supportare redirect e pipe.
 Quando opportuno deve essere in grado di eseguire comandi esterni ed invece, deve poter usare un "sano" default interno (che sarà dettagliato nel corso di questo documento).
 Lo scopo principale del progetto è di familiarizzare lo studente con le strutture del filesystem, l'esecuzione di comandi dall'interno del listato C (con i conseguenti problemi di sicurezza), con il sistema, in generale.
 
@@ -37,9 +37,30 @@ make
 
 ## Uso ##
 
-La **shell** si comporta come bash e rispetta le specifiche del presente documento.
+La **shell** si comporta come bash e rispetta le specifiche del presente documento e si avvia con:
+```
+./bin/feshell
+```
 
 Per quanto riguarda **ls**, si veda la pagina di help per le opzioni disponibili:
 ```
 ls --help
+```
+
+### Compilazione automatizzata ###
+
+Per la fase di sviluppo abbiamo aggiunto la compilazione automatizzata. Viene lanciata al salvataggio dei file `.c` e `.h`.
+Si può avviare con:
+```
+grunt
+```
+
+
+Per installare *grunt*, installare **npm** se non fosse installato, installando *node* (Debian/Ubuntu):
+```
+sudo apt-get install nodejs
+```
+e successivamente installare **grunt**:
+```
+npm install -g grunt-cli
 ```
