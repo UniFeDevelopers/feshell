@@ -49,18 +49,20 @@ ls --help
 
 ### Compilazione automatizzata ###
 
-Per la fase di sviluppo abbiamo aggiunto la compilazione automatizzata. Viene lanciata al salvataggio dei file `.c` e `.h`.
+Per la fase di sviluppo abbiamo automatizzato la compilazione con `grunt`.
+Viene lanciata al salvataggio dei file `.c` e `.h`.
+
 Si può avviare con:
 ```
 grunt
 ```
 
 
-Per installare *grunt*, installare **npm** se non fosse installato, installando *node* (Debian/Ubuntu):
+Per installare *grunt*, installare **npm** se non fosse installato (Debian/Ubuntu):
 ```
 sudo apt-get install nodejs
 ```
-e successivamente installare **grunt**:
+e successivamente installare **grunt** e le sue dipendenze all'interno della directory principale del repository:
 ```
-npm install -g grunt-cli
+npm install
 ```
