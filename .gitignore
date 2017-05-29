@@ -3,7 +3,10 @@
 # file compilati
 bin/
 
-# file temporanei
+# file temporanei compilazione
 *.o
 *.out
+
+# file temporanei vim
 *.swp
+*.swo
