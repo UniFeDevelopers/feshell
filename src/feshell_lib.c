@@ -61,7 +61,8 @@ void fork_pipes(int n, cmd_t *list) {
 
     pipe(pipes);
 
-    if ((pid = fork()) == 0) {
+    pid = fork();
+    if (pid == 0) {
         if (dup2(pipes[1], 1) == -1) {
             fprintf(stderr, "-feshell: Errore  pipe: i = 0, pipe[1)]");
             perror("");
@@ -81,7 +82,8 @@ void fork_pipes(int n, cmd_t *list) {
     for (i = 1; i < n - 1; i++) {
         pipe(pipes + 2 * i);
 
-        if ((pid = fork()) == 0) {
+        pid = fork();
+        if (pid == 0) {
             /*
             if (tmp->node_type == 1) {
                 //pipes[1] = open(tmp->nome, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
@@ -126,7 +128,8 @@ void fork_pipes(int n, cmd_t *list) {
 
     // *** ultimo processo ***
 
-    if ((pid = fork()) == 0) {
+    pid = fork();
+    if (pid == 0) {
         if (dup2(pipes[2 * (n - 2)], 0) == -1) {
             fprintf(stderr, "-feshell: Errore  pipe: i = last, pipe[2 * (n - 2)]");
             perror("");
