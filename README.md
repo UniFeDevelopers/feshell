@@ -37,7 +37,7 @@ make
 
 ### Compilazione automatizzata ###
 
-Per la fase di sviluppo abbiamo automatizzato la compilazione con `grunt`.
+Per la fase di sviluppo abbiamo automatizzato la compilazione con `grunt`.  
 Viene lanciata al salvataggio dei file `.c` e `.h`.
 
 Si può avviare con:
