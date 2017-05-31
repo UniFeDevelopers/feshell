@@ -270,7 +270,7 @@ void list_dir(int n_args, char **args) {
         sort(entries, countDir, "alpha");
     }
 
-    for (i = 0; i < num_ents; i++) {
+    for (i = 0; i <= countDir; i++) {
         printf("%s", entries[i].data);
     }
 
