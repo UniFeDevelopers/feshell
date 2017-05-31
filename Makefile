@@ -1,5 +1,9 @@
 all: feshell
 
+sort_lib.o: ./src/ls/sort_lib.c
+	gcc -Wall -g -c ./src/ls/sort_lib.c
+	mv sort_lib.o ./src/ls/
+
 ls_lib.o: ./src/ls/ls_lib.c
 	gcc -Wall -g -c ./src/ls/ls_lib.c
 	mv ls_lib.o ./src/ls/
@@ -20,13 +24,13 @@ feshell.test.o: ./src/feshell.test.c
 	gcc -Wall -g -c ./src/feshell.test.c
 	mv feshell.test.o src/
 
-feshell: ls_lib.o parse_lib.o feshell_lib.o feshell.o
-	gcc -Wall -g -o feshell ./src/ls/ls_lib.o ./src/parse_lib/parse_lib.o ./src/feshell_lib.o ./src/feshell.o -lm
+feshell: sort_lib.o ls_lib.o parse_lib.o feshell_lib.o feshell.o
+	gcc -Wall -g -o feshell ./src/ls/sort_lib.o ./src/ls/ls_lib.o ./src/parse_lib/parse_lib.o ./src/feshell_lib.o ./src/feshell.o -lm
 	mkdir -p bin/
 	mv feshell bin/
 
-test: ls_lib.o parse_lib.o feshell_lib.o feshell.test.o
-	gcc -Wall -g -o test ./src/ls/ls_lib.o ./src/parse_lib/parse_lib.o ./src/feshell_lib.o ./src/feshell.test.o -lm
+test: sort_lib.o ls_lib.o parse_lib.o feshell_lib.o feshell.test.o
+	gcc -Wall -g -o test ./src/ls/sort_lib.o ./src/ls/ls_lib.o ./src/parse_lib/parse_lib.o ./src/feshell_lib.o ./src/feshell.test.o -lm
 	mkdir -p bin/
 	mv test bin/
 

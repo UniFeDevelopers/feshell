@@ -90,49 +90,6 @@ char *strrep(char *str, char *orig, char *rep) {
     return buffer;
 }
 
-void merge_time(dir_entry *a, int p, int q, int r) {
-    int i, j, k;
-    int n1 = q - p + 1;
-    int n2 = r - q;
-    dir_entry *L = malloc(n1 * sizeof(dir_entry));
-    dir_entry *R = malloc(n2 * sizeof(dir_entry));
-    memcpy(L, a + p, n1 * sizeof(dir_entry));
-    memcpy(R, a + q + 1, n2 * sizeof(dir_entry));
-    for (i = 0, j = 0, k = p; k <= r; k++) {
-        if (i == n1) a[k] = R[j++];
-        else if (j == n2) a[k] = L[i++];
-        else if (L[i].time <= R[j].time) a[k] = L[i++];
-        else a[k] = R[j++];
-    }
-    free(L);
-    free(R);
-    return;
-}
-
-void insertion_sort_time(dir_entry *a, int p, int r) {
-    int i;
-    for (i = p + 1; i <=r; i++) {
-        dir_entry key = a[i];
-        int j = i - 1;
-        while (j >= p && a[j].time < key.time) {
-            a[j + 1] = a[j];
-            j = j - 1;
-        }
-        a[j + 1] = key;
-    }
-}
-
-void mixed_sort_time(dir_entry *a, int p, int r, int K) {
-    if (p >= r) return;
-    if (r - p < K) insertion_sort_time(a, p, r);
-    else {
-        int q = (p + r) / 2;
-        mixed_sort_time(a, p, q, K);
-        mixed_sort_time(a, q + 1, r, K);
-        merge_time(a, p, q, r);
-    }
-}
-
 void list_dir(int n_args, char **args) {
     parsedInput *input;
     struct dirent *ent;
@@ -169,8 +126,21 @@ void list_dir(int n_args, char **args) {
 
     dp = opendir((const char*) strrep(path, "~", getenv("HOME")));
     if (dp != NULL) {
-        for (countDir = 0; readdir(dp) != NULL; countDir++);
+        countDir = 0;
+        ent = readdir(dp);
+        while (ent != NULL ) {
+            if ((!input->flag_a && ent->d_name[0] != '.') || input->flag_a) {
+                countDir++;
+            }
+
+            ent = readdir(dp);
+        }
         closedir(dp);
+    }
+    else {
+        fprintf(stderr, "-feshell: ls: %s: ", path);
+        perror("");
+        return;
     }
 
     entries = (dir_entry *) malloc(sizeof(dir_entry) * countDir);
@@ -294,7 +264,10 @@ void list_dir(int n_args, char **args) {
     }
 
     if (input->flag_t) {
-        mixed_sort_time(entries, 0, num_ents, 50);
+        sort(entries, countDir, "time");
+    }
+    else {
+        sort(entries, countDir, "alpha");
     }
 
     for (i = 0; i < num_ents; i++) {

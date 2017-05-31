@@ -2,7 +2,9 @@
 
 #ifndef _ls_lib
 #define _ls_lib
+
 #define MAX_NUM_DIR 1024
+#define SORT_K 50
 
 typedef struct _parsedInput {
     int flag_a;
@@ -19,6 +21,7 @@ typedef struct _dir_entry {
     time_t time;
 } dir_entry;
 
+void sort(dir_entry *, int, char *);
 void list_dir(int, char **);
 char *strrep(char *, char *, char *);
 
