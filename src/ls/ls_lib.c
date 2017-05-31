@@ -148,11 +148,11 @@ void list_dir(int n_args, char **args) {
     double size;
     char um[2];
     char buffer[1024];
-    int i;
+    int i, countDir = 0;
 
     char currentDirectory[1024] = "";
 
-    dir_entry entries[MAX_NUM_DIR];
+    dir_entry *entries;
     dir_entry ent_tmp;
     strcpy(ent_tmp.data, "");
     strcpy(ent_tmp.name, "");
@@ -168,7 +168,14 @@ void list_dir(int n_args, char **args) {
     char *path = input->path != NULL ? input->path : getcwd(currentDirectory, 1024);
 
     dp = opendir((const char*) strrep(path, "~", getenv("HOME")));
+    if (dp != NULL) {
+        for (countDir = 0; readdir(dp) != NULL; countDir++);
+        closedir(dp);
+    }
 
+    entries = (dir_entry *) malloc(sizeof(dir_entry) * countDir);
+
+    dp = opendir((const char*) strrep(path, "~", getenv("HOME")));
     if (dp == NULL) {
         fprintf(stderr, "-feshell: ls: %s: ", path);
         perror("");
@@ -181,8 +188,6 @@ void list_dir(int n_args, char **args) {
         if ((!input->flag_a && ent->d_name[0] != '.') || input->flag_a) {
             strcpy(ent_tmp.data, "");
             strcpy(ent_tmp.name, "");
-
-            //path_tmp = (char *) malloc(sizeof(char) * (strlen(strrep(path, "~", getenv("HOME"))) + strlen(ent->d_name) + 1));
 
             strcpy(path_tmp, strrep(path, "~", getenv("HOME")));
             strcat(path_tmp, "/");
@@ -198,8 +203,7 @@ void list_dir(int n_args, char **args) {
             ent_tmp.time = st_time;
 
             if (!input->flag_l) {
-                sprintf(buffer, (S_ISDIR(fileStat.st_mode)) ? "\x1B[34m" : "\x1B[0m");
-                strcat(ent_tmp.data, buffer);
+                strcat(ent_tmp.data, (S_ISDIR(fileStat.st_mode)) ? "\x1B[34m" : "\x1B[0m");
                 sprintf(buffer, "%s\t", ent->d_name);
                 strcat(ent_tmp.data, buffer);
             }
@@ -208,26 +212,16 @@ void list_dir(int n_args, char **args) {
                 grp = getgrgid(fileStat.st_gid);
                 strftime(time, 100, "%d %b %H:%M", localtime(&st_time));
 
-                sprintf(buffer, (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
-                strcat(ent_tmp.data, buffer);
-                sprintf(buffer, (fileStat.st_mode & S_IRUSR) ? "r" : "-");
-                strcat(ent_tmp.data, buffer);
-                sprintf(buffer, (fileStat.st_mode & S_IWUSR) ? "w" : "-");
-                strcat(ent_tmp.data, buffer);
-                sprintf(buffer, (fileStat.st_mode & S_IXUSR) ? "x" : "-");
-                strcat(ent_tmp.data, buffer);
-                sprintf(buffer, (fileStat.st_mode & S_IRGRP) ? "r" : "-");
-                strcat(ent_tmp.data, buffer);
-                sprintf(buffer, (fileStat.st_mode & S_IWGRP) ? "w" : "-");
-                strcat(ent_tmp.data, buffer);
-                sprintf(buffer, (fileStat.st_mode & S_IXGRP) ? "x" : "-");
-                strcat(ent_tmp.data, buffer);
-                sprintf(buffer, (fileStat.st_mode & S_IROTH) ? "r" : "-");
-                strcat(ent_tmp.data, buffer);
-                sprintf(buffer, (fileStat.st_mode & S_IWOTH) ? "w" : "-");
-                strcat(ent_tmp.data, buffer);
-                sprintf(buffer, (fileStat.st_mode & S_IXOTH) ? "x" : "-");
-                strcat(ent_tmp.data, buffer);
+                strcat(ent_tmp.data, (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+                strcat(ent_tmp.data, (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+                strcat(ent_tmp.data, (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+                strcat(ent_tmp.data, (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+                strcat(ent_tmp.data, (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+                strcat(ent_tmp.data, (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+                strcat(ent_tmp.data, (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+                strcat(ent_tmp.data, (fileStat.st_mode & S_IROTH) ? "r" : "-");
+                strcat(ent_tmp.data, (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+                strcat(ent_tmp.data, (fileStat.st_mode & S_IXOTH) ? "x" : "-");
                 sprintf(buffer, " %4hu", (unsigned short) fileStat.st_nlink);
                 strcat(ent_tmp.data, buffer);
                 sprintf(buffer, " %8s", pwd->pw_name);
@@ -259,16 +253,13 @@ void list_dir(int n_args, char **args) {
 
                 if (!input->no_color) {
                     if (S_ISDIR(fileStat.st_mode)) {
-                        sprintf(buffer, "\x1B[34m");
-                        strcat(ent_tmp.data, buffer);
+                        strcat(ent_tmp.data, "\x1B[34m");
                     }
                     else if (fileStat.st_mode & S_IXUSR) {
-                        sprintf(buffer, "\x1B[31m");
-                        strcat(ent_tmp.data, buffer);
+                        strcat(ent_tmp.data, "\x1B[31m");
                     }
                     if (S_ISLNK(fileStat.st_mode)) {
-                        sprintf(buffer, "\x1B[35m");
-                        strcat(ent_tmp.data, buffer);
+                        strcat(ent_tmp.data, "\x1B[35m");
                     }
                 }
 
@@ -277,33 +268,26 @@ void list_dir(int n_args, char **args) {
                 strcpy(ent_tmp.name, ent->d_name);
 
                 if (S_ISDIR(fileStat.st_mode)) {
-                    sprintf(buffer, "/");
-                    strcat(ent_tmp.data, buffer);
+                    strcat(ent_tmp.data, "/");
                 }
                 else if (S_ISLNK(fileStat.st_mode)) {
-                    sprintf(buffer, "@ -> ");
-                    strcat(ent_tmp.data, buffer);
+                    strcat(ent_tmp.data, "@ -> ");
                     actualpath = realpath(path_tmp, NULL);
                     if (actualpath != NULL) {
-                        sprintf(buffer, "%s", actualpath);
-                        strcat(ent_tmp.data, buffer);
+                        strcat(ent_tmp.data, actualpath);
                     }
                 }
                 else if (fileStat.st_mode & S_IXUSR) {
-                    sprintf(buffer, "*");
-                    strcat(ent_tmp.data, buffer);
+                    strcat(ent_tmp.data, "*");
                 }
 
-                sprintf(buffer, "\n");
-                strcat(ent_tmp.data, buffer);
+                strcat(ent_tmp.data, "\n");
             }
 
             strcpy(entries[num_ents].data, ent_tmp.data);
             strcpy(entries[num_ents].name, ent_tmp.name);
             entries[num_ents].time = ent_tmp.time;
             num_ents++;
-
-            //free(path_tmp);
         }
 
         ent = readdir(dp);
