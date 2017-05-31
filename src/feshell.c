@@ -41,12 +41,17 @@ int main(void) {
             cd(cmd_list->args);
         }
         else {
-            if ((pid = fork()) == 0) {
+            pid = fork();
+            if (pid == 0) {
                 execute(cmd_list->n_args, cmd_list->args);
                 exit(0);
             }
-            else {
+            else if (pid > 0) {
                 wait(&status);
+            }
+            else {
+                fprintf(stderr, "-feshell: fork failed for: %s", cmd_list->args[0]);
+                perror("");
             }
         }
 

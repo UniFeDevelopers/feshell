@@ -43,6 +43,7 @@ void execute(int n_args, char *args[]) {
         if (execvp(*args, args) == -1) {
             fprintf(stderr, "-feshell: %s: ", *args);
             perror("");
+            exit(1);
         }
     }
 }
@@ -59,19 +60,29 @@ void fork_pipes(int n, cmd_t *list) {
 
     // *** primo processo ***
 
-    pipe(pipes);
+    if (pipe(pipes) == -1) {
+        fprintf(stderr, "-feshell: failed while creating pipes for: %s", tmp->args[0]);
+        perror("");
+        exit(1);
+    }
 
     pid = fork();
     if (pid == 0) {
         if (dup2(pipes[1], 1) == -1) {
             fprintf(stderr, "-feshell: Errore  pipe: i = 0, pipe[1)]");
             perror("");
+            exit(1);
         }
 
         close(pipes[0]);
         close(pipes[1]);
 
         execute(tmp->n_args, tmp->args);
+    }
+    else if (pid < 0) {
+        fprintf(stderr, "-feshell: fork failed for: %s", tmp->args[0]);
+        perror("");
+        exit(1);
     }
 
     tmp = tmp->next;
@@ -80,7 +91,11 @@ void fork_pipes(int n, cmd_t *list) {
     // *** processi intermedi ***
 
     for (i = 1; i < n - 1; i++) {
-        pipe(pipes + 2 * i);
+        if (pipe(pipes + 2 * i) == -1) {
+            fprintf(stderr, "-feshell: failed while creating pipes for: %s", tmp->args[0]);
+            perror("");
+            exit(1);
+        }
 
         pid = fork();
         if (pid == 0) {
@@ -103,11 +118,13 @@ void fork_pipes(int n, cmd_t *list) {
             if (dup2(pipes[2 * (i - 1)], 0) == -1) {
                 fprintf(stderr, "-feshell: Errore  pipe: i = %d, pipe[2 * (i - 1)]", i);
                 perror("");
+                exit(1);
             }
 
             if (dup2(pipes[(2 * i) + 1], 1) == -1) {
                 fprintf(stderr, "-feshell: Errore  pipe: i = %d, pipe[2 * i + 1]", i);
                 perror("");
+                exit(1);
             }
 
             for (j = 0; j <= (2 * i) + 1; j++) {
@@ -121,6 +138,11 @@ void fork_pipes(int n, cmd_t *list) {
 
             execute(tmp->n_args, tmp->args);
         }
+        else if (pid < 0) {
+            fprintf(stderr, "-feshell: fork failed for: %s", tmp->args[0]);
+            perror("");
+            exit(1);
+        }
 
         tmp = tmp->next;
     }
@@ -133,6 +155,7 @@ void fork_pipes(int n, cmd_t *list) {
         if (dup2(pipes[2 * (n - 2)], 0) == -1) {
             fprintf(stderr, "-feshell: Errore  pipe: i = last, pipe[2 * (n - 2)]");
             perror("");
+            exit(1);
         }
 
         for (j = 0; j <= 2 * (n - 2) + 1; j++) {
@@ -143,6 +166,11 @@ void fork_pipes(int n, cmd_t *list) {
         //close(pipes[2 * (n - 2) + 1]);
 
         execute(tmp->n_args, tmp->args);
+    }
+    else if (pid < 0) {
+        fprintf(stderr, "-feshell: fork failed for: %s", tmp->args[0]);
+        perror("");
+        exit(1);
     }
 
 
