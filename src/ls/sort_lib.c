@@ -104,8 +104,8 @@ void mixed_sort_alpha(dir_entry *a, int p, int r, int K) {
  */
 
 void sort(dir_entry *a, int num_ents, char *sort_mode) {
-    if (!strcmp(sort_mode, "time")) mixed_sort_time(a, 0, num_ents, SORT_K);
-    else if (!strcmp(sort_mode, "alpha")) mixed_sort_alpha(a, 0, num_ents, SORT_K);
+    if (!strcmp(sort_mode, "time")) mixed_sort_time(a, 0, num_ents - 1, SORT_K);
+    else if (!strcmp(sort_mode, "alpha")) mixed_sort_alpha(a, 0, num_ents - 1, SORT_K);
     else {
         fprintf(stderr, "\n-sort: invalid mode\n");
         exit(1);

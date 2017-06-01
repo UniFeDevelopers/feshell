@@ -90,6 +90,34 @@ char *strrep(char *str, char *orig, char *rep) {
     return buffer;
 }
 
+int countDirEnts(char *path, int all) {
+    DIR *dp = NULL;
+    struct dirent *ent;
+    int ents = 0;
+
+    dp = opendir((const char*) path);
+    if (dp != NULL) {
+        ent = readdir(dp);
+        while (ent != NULL ) {
+            if ((!all && ent->d_name[0] != '.') || all) {
+                ents++;
+            }
+
+            ent = readdir(dp);
+        }
+        closedir(dp);
+
+        return ents;
+    }
+    else {
+        fprintf(stderr, "-feshell: ls: %s: ", path);
+        perror("");
+        return -1;
+    }
+
+    return 0;
+}
+
 void list_dir(int n_args, char **args) {
     parsedInput *input;
     struct dirent *ent;
@@ -124,24 +152,7 @@ void list_dir(int n_args, char **args) {
 
     char *path = input->path != NULL ? input->path : getcwd(currentDirectory, 1024);
 
-    dp = opendir((const char*) strrep(path, "~", getenv("HOME")));
-    if (dp != NULL) {
-        countDir = 0;
-        ent = readdir(dp);
-        while (ent != NULL ) {
-            if ((!input->flag_a && ent->d_name[0] != '.') || input->flag_a) {
-                countDir++;
-            }
-
-            ent = readdir(dp);
-        }
-        closedir(dp);
-    }
-    else {
-        fprintf(stderr, "-feshell: ls: %s: ", path);
-        perror("");
-        return;
-    }
+    countDir = countDirEnts((char *) strrep(path, "~", getenv("HOME")), input->flag_a);
 
     entries = (dir_entry *) malloc(sizeof(dir_entry) * countDir);
 
@@ -270,7 +281,7 @@ void list_dir(int n_args, char **args) {
         sort(entries, countDir, "alpha");
     }
 
-    for (i = 0; i <= countDir; i++) {
+    for (i = 0; i < countDir; i++) {
         printf("%s", entries[i].data);
     }
 
