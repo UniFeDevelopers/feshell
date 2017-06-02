@@ -98,7 +98,7 @@ int main(void) {
                     }
                 }
 
-                if (cmd_list->node_type % 2 != 0) {
+                if (cmd_list->node_type == 1 || cmd_list->node_type == 3 || cmd_list->node_type == 5) {
                     close(in);
                 }
 
