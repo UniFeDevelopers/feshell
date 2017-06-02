@@ -50,7 +50,6 @@ void execute(int n_args, char *args[]) {
 
 void fork_pipes(int n, cmd_t *list) {
     int i, j, status;
-    //int fd;
     pid_t pid;
 
     cmd_t *tmp = list;
