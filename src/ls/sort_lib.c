@@ -27,10 +27,10 @@ void merge_time(dir_entry *a, int p, int q, int r) {
 }
 
 void insertion_sort_time(dir_entry *a, int p, int r) {
-    int i;
+    int i, j;
     for (i = p + 1; i <=r; i++) {
         dir_entry key = a[i];
-        int j = i - 1;
+        j = i - 1;
         while (j >= p && a[j].time < key.time) {
             a[j + 1] = a[j];
             j = j - 1;
@@ -75,10 +75,10 @@ void merge_alpha(dir_entry *a, int p, int q, int r) {
 }
 
 void insertion_sort_alpha(dir_entry *a, int p, int r) {
-    int i;
+    int i, j;
     for (i = p + 1; i <=r; i++) {
         dir_entry key = a[i];
-        int j = i - 1;
+        j = i - 1;
         while (j >= p && strcmp(a[j].name, key.name) > 0) {
             a[j + 1] = a[j];
             j = j - 1;
