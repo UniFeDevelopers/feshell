@@ -32,7 +32,7 @@ int main(void) {
         if (!strcmp(cmd_list->args[0], "cd")) {
             cd(cmd_list->args);
         }
-        else if (cmd_list->n_childs  >= 1) {
+        else {
             fork_pipes(cmd_list->n_childs, cmd_list);
         }
 
