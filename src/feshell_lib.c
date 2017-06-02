@@ -99,21 +99,6 @@ void fork_pipes(int n, cmd_t *list) {
 
         pid = fork();
         if (pid == 0) {
-            /*
-            if (tmp->node_type == 1) {
-                //pipes[1] = open(tmp->nome, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-                fd = open(tmp->nome, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-                dup2(pipes[1], fd);
-                close(pipes[0]);
-                close(pipes[1]);
-            }
-            else if (tmp->node_type == 2) {
-                fd = open(tmp->nome, O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
-                dup2(pipes[1], fd);
-                close(pipes[0]);
-                close(pipes[1]);
-            }
-            */
 
             if (dup2(pipes[2 * (i - 1)], 0) == -1) {
                 fprintf(stderr, "-feshell: Errore  pipe: i = %d, pipe[2 * (i - 1)]", i);
@@ -130,11 +115,6 @@ void fork_pipes(int n, cmd_t *list) {
             for (j = 0; j <= (2 * i) + 1; j++) {
                 close(pipes[j]);
             }
-
-            //close(pipes[2 * (i - 1)]);
-            //close(pipes[2 * (i - 1) + 1]);
-            //close(pipes[(2 * i)]);
-            //close(pipes[(2 * i) + 1]);
 
             execute(tmp->n_args, tmp->args);
         }
@@ -161,9 +141,6 @@ void fork_pipes(int n, cmd_t *list) {
         for (j = 0; j <= 2 * (n - 2) + 1; j++) {
             close(pipes[j]);
         }
-
-        //close(pipes[2 * (n - 2)]);
-        //close(pipes[2 * (n - 2) + 1]);
 
         execute(tmp->n_args, tmp->args);
     }
