@@ -69,7 +69,7 @@ void fork_pipes(int n, cmd_t *list) {
     pid = fork();
     if (pid == 0) {
         if (dup2(pipes[1], 1) == -1) {
-            fprintf(stderr, "-feshell: Errore  pipe: i = 0, pipe[1)]");
+            fprintf(stderr, "-feshell: Errore  pipe: i = 0, pipe[1]");
             perror("");
             exit(1);
         }
