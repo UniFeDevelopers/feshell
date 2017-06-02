@@ -91,8 +91,8 @@ cmd_t *parse(char *buff) {
     for (i = 0; i < tokens; i++) {
         if (strlen(cmd) && strcmp(cmd, "\t") && strcmp(cmd, " ")) {
             if (!strcmp(cmd, "|")) {
-                type = is_file_in + (2 * is_file_out) + (4 * is_file_append); // see parse_lib.h
                 createElement(&cmd_list, args, n_args, fileIn, fileOut, type);
+                type = 0;
 
                 is_file_in = is_file_in ? 0 : is_file_in;
 
@@ -111,23 +111,27 @@ cmd_t *parse(char *buff) {
                 is_file_in = 1;
             }
             else {
+                if (!(is_file_in || is_file_out || is_file_append))  {
+                    args[n_args] = (char *) malloc(sizeof(char) * (STRING_MAX_L + 1));
+                    strcpy(args[n_args], cmd);
+                    n_args++;
+                }
+
                 if (is_file_in) {
                     strcpy(fileIn, cmd);
+                    type += 1;
                     is_file_in = 0;
                 }
+
                 if (is_file_out) {
                     strcpy(fileOut, cmd);
+                    type += 2;
                     is_file_out = 0;
                 }
                 else if (is_file_append) {
                     strcpy(fileOut, cmd);
+                    type += 4;
                     is_file_append = 0;
-                }
-
-                if (!is_file_in && !is_file_out && !is_file_append)  {
-                    args[n_args] = (char *) malloc(sizeof(char) * (STRING_MAX_L + 1));
-                    strcpy(args[n_args], cmd);
-                    n_args++;
                 }
             }
         }
@@ -135,7 +139,6 @@ cmd_t *parse(char *buff) {
         cmd = strtok(NULL, " \t\n;");
     }
 
-    type = is_file_in + (2 * is_file_out) + (4 * is_file_append); // see parse_lib.h
     createElement(&cmd_list, args, n_args, fileIn, fileOut, type);
 
     free(args);
