@@ -62,7 +62,7 @@ void fork_pipes(int n, cmd_t *list) {
 
     // *** primo processo ***
 
-    if (list->n_childs > 1) {
+    if (n > 1) {
         if (pipe(pipes) == -1) {
             fprintf(stderr, "-feshell: failed while creating pipes for: %s", tmp->args[0]);
             perror("");
@@ -72,6 +72,7 @@ void fork_pipes(int n, cmd_t *list) {
 
     if (tmp->node_type == 1 || tmp->node_type == 3 || tmp->node_type == 5) {
         in = open(tmp->fileIn, O_RDONLY);
+        usedIn = 1;
 
         if (in < 0) {
             fprintf(stderr, "-feshell: Error opening: %s\n", tmp->fileIn);
@@ -82,6 +83,7 @@ void fork_pipes(int n, cmd_t *list) {
 
     if (tmp->node_type == 2 || tmp->node_type == 3) {
         out = open(tmp->fileOut, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+        usedOut = 1;
         if (out < 0) {
             fprintf(stderr, "-feshell: Error opening: %s\n", tmp->fileIn);
             perror("");
@@ -91,6 +93,7 @@ void fork_pipes(int n, cmd_t *list) {
 
     if (tmp->node_type == 4 || tmp->node_type == 5) {
         out = open(tmp->fileOut, O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+        usedOut = 1;
         if (out < 0) {
             fprintf(stderr, "-feshell: Error opening: %s\n", tmp->fileIn);
             perror("");
@@ -144,6 +147,7 @@ void fork_pipes(int n, cmd_t *list) {
         }
 
         execute(tmp->n_args, tmp->args);
+        exit(0);
     }
     else if (pid < 0) {
         fprintf(stderr, "-feshell: fork failed for: %s", tmp->args[0]);
@@ -151,35 +155,101 @@ void fork_pipes(int n, cmd_t *list) {
         exit(1);
     }
 
-    tmp = tmp->next;
+    if (n > 1) {
+        tmp = tmp->next;
+
+        // *** processi intermedi ***
+
+        for (i = 1; i < n - 1; i++) {
+            if (pipe(pipes + 2 * i) == -1) {
+                fprintf(stderr, "-feshell: failed while creating pipes for: %s", tmp->args[0]);
+                perror("");
+                exit(1);
+            }
+
+            pid = fork();
+            if (pid == 0) {
+
+                if (dup2(pipes[2 * (i - 1)], 0) == -1) {
+                    fprintf(stderr, "-feshell: Errore  pipe: i = %d, pipe[2 * (i - 1)]", i);
+                    perror("");
+                    exit(1);
+                }
+
+                if (dup2(pipes[(2 * i) + 1], 1) == -1) {
+                    fprintf(stderr, "-feshell: Errore  pipe: i = %d, pipe[2 * i + 1]", i);
+                    perror("");
+                    exit(1);
+                }
+
+                for (j = 0; j <= (2 * i) + 1; j++) {
+                    close(pipes[j]);
+                }
+
+                execute(tmp->n_args, tmp->args);
+            }
+            else if (pid < 0) {
+                fprintf(stderr, "-feshell: fork failed for: %s", tmp->args[0]);
+                perror("");
+                exit(1);
+            }
+
+            tmp = tmp->next;
+        }
 
 
-    // *** processi intermedi ***
+        // *** ultimo processo ***
 
-    for (i = 1; i < n - 1; i++) {
-        if (pipe(pipes + 2 * i) == -1) {
-            fprintf(stderr, "-feshell: failed while creating pipes for: %s", tmp->args[0]);
-            perror("");
-            exit(1);
+        if (tmp->node_type == 2) {
+            out = open(tmp->fileOut, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            usedOut = 1;
+            if (out < 0) {
+                fprintf(stderr, "-feshell: Error opening: %s\n", tmp->fileIn);
+                perror("");
+                exit(1);
+            }
+        }
+
+        if (tmp->node_type == 4) {
+            out = open(tmp->fileOut, O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            usedOut = 1;
+            if (out < 0) {
+                fprintf(stderr, "-feshell: Error opening: %s\n", tmp->fileIn);
+                perror("");
+                exit(1);
+            }
         }
 
         pid = fork();
         if (pid == 0) {
-
-            if (dup2(pipes[2 * (i - 1)], 0) == -1) {
-                fprintf(stderr, "-feshell: Errore  pipe: i = %d, pipe[2 * (i - 1)]", i);
+            if (dup2(pipes[2 * (n - 2)], 0) == -1) {
+                fprintf(stderr, "-feshell: Errore  pipe: i = last, pipe[2 * (n - 2)]");
                 perror("");
                 exit(1);
             }
 
-            if (dup2(pipes[(2 * i) + 1], 1) == -1) {
-                fprintf(stderr, "-feshell: Errore  pipe: i = %d, pipe[2 * i + 1]", i);
-                perror("");
-                exit(1);
-            }
-
-            for (j = 0; j <= (2 * i) + 1; j++) {
+            for (j = 0; j <= 2 * (n - 2) + 1; j++) {
                 close(pipes[j]);
+            }
+
+            if (tmp->node_type == 2) {
+                if (dup2(out, 1) == -1) {
+                    fprintf(stderr, "-feshell: Error writing to pipe: %s\n", tmp->fileIn);
+                    perror("");
+                    exit(1);
+                }
+            }
+
+            if (tmp->node_type == 4) {
+                if (dup2(out, 1) == -1) {
+                    fprintf(stderr, "-feshell: Error writing to pipe: %s\n", tmp->fileIn);
+                    perror("");
+                    exit(1);
+                }
+            }
+
+            if (tmp->node_type == 2 || tmp->node_type == 4) {
+                close(out);
             }
 
             execute(tmp->n_args, tmp->args);
@@ -190,73 +260,11 @@ void fork_pipes(int n, cmd_t *list) {
             exit(1);
         }
 
-        tmp = tmp->next;
-    }
 
-
-    // *** ultimo processo ***
-    if (tmp->node_type == 2) {
-        out = open(tmp->fileOut, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-        if (out < 0) {
-            fprintf(stderr, "-feshell: Error opening: %s\n", tmp->fileIn);
-            perror("");
-            exit(1);
+        // chiude tutte le pipe
+        for (i = 0; i < 2 * (n - 1); i++) {
+            close(pipes[i]);
         }
-    }
-
-    if (tmp->node_type == 4) {
-        out = open(tmp->fileOut, O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-        if (out < 0) {
-            fprintf(stderr, "-feshell: Error opening: %s\n", tmp->fileIn);
-            perror("");
-            exit(1);
-        }
-    }
-
-    pid = fork();
-    if (pid == 0) {
-        if (dup2(pipes[2 * (n - 2)], 0) == -1) {
-            fprintf(stderr, "-feshell: Errore  pipe: i = last, pipe[2 * (n - 2)]");
-            perror("");
-            exit(1);
-        }
-
-        for (j = 0; j <= 2 * (n - 2) + 1; j++) {
-            close(pipes[j]);
-        }
-
-        if (tmp->node_type == 2) {
-            if (dup2(out, 1) == -1) {
-                fprintf(stderr, "-feshell: Error writing to pipe: %s\n", tmp->fileIn);
-                perror("");
-                exit(1);
-            }
-        }
-
-        if (tmp->node_type == 4) {
-            if (dup2(out, 1) == -1) {
-                fprintf(stderr, "-feshell: Error writing to pipe: %s\n", tmp->fileIn);
-                perror("");
-                exit(1);
-            }
-        }
-
-        if (tmp->node_type == 2 || tmp->node_type == 4) {
-            close(out);
-        }
-
-        execute(tmp->n_args, tmp->args);
-    }
-    else if (pid < 0) {
-        fprintf(stderr, "-feshell: fork failed for: %s", tmp->args[0]);
-        perror("");
-        exit(1);
-    }
-
-
-    // chiude tutte le pipe
-    for (i = 0; i < 2 * (n - 1); i++) {
-        close(pipes[i]);
     }
 
     // chiude i fd per le redirect
