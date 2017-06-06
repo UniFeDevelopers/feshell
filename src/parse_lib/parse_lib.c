@@ -84,6 +84,10 @@ cmd_t *parse(char *buff) {
     strcpy(buff_copy, buff);
     tokens = countTokens(buff_copy, " \t\n;");
 
+    if (!tokens) {
+        return NULL;
+    }
+
     args = (char **) malloc(sizeof(char *) * (tokens + 1));
     if (args == NULL) exit(1);
 

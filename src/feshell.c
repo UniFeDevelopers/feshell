@@ -28,6 +28,10 @@ int main(void) {
         }
 
         cmd_list = parse(buff);
+        if (cmd_list == NULL) {
+            shellInfo();
+            continue;
+        }
 
         if (!strcmp(cmd_list->args[0], "cd")) {
             cd(cmd_list->args);
