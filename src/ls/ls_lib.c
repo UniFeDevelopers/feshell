@@ -184,7 +184,9 @@ void list_dir(int n_args, char **args) {
             ent_tmp.time = st_time;
 
             if (!input->flag_l) {
-                strcat(ent_tmp.data, (S_ISDIR(fileStat.st_mode)) ? "\x1B[34m" : "\x1B[0m");
+                if (!input->no_color) {
+                    strcat(ent_tmp.data, (S_ISDIR(fileStat.st_mode)) ? "\x1B[34m" : "\x1B[0m");
+                }
                 sprintf(buffer, "%s\t", ent->d_name);
                 strcat(ent_tmp.data, buffer);
             }
