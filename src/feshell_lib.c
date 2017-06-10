@@ -186,6 +186,7 @@ void fork_pipes(int n, cmd_t *list) {
                 }
 
                 execute(tmp->n_args, tmp->args);
+                exit(0);
             }
             else if (pid < 0) {
                 fprintf(stderr, "-feshell: fork failed for: %s", tmp->args[0]);
@@ -252,6 +253,7 @@ void fork_pipes(int n, cmd_t *list) {
             }
 
             execute(tmp->n_args, tmp->args);
+            exit(0);
         }
         else if (pid < 0) {
             fprintf(stderr, "-feshell: fork failed for: %s", tmp->args[0]);
